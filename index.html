@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rig Weights</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1f4e78">
+<meta name="theme-color" content="#0b1015">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Rig Weights">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,369 +14,390 @@
 <link rel="icon" href="icon-192.png">
 <style>
   :root{
-    --bg:#f4f6f8; --card:#fff; --ink:#1d2733; --muted:#64748b; --line:#dde3ea; --brand:#1f4e78;
-    --green:#1e8e3e; --green-bg:#e6f4ea; --yellow:#b06d00; --yellow-bg:#fff4d6; --red:#c5221f; --red-bg:#fce8e6;
-    --grey-bg:#eef1f4;
+    --bg:#0f141a; --card:#18202a; --card2:#1f2934; --line:#2e3a48; --ink:#eef3f8; --muted:#a9b6c3; --brand:#5aa9ff;
+    --green:#3ddc84; --green-bg:rgba(61,220,132,.15);
+    --yellow:#ffc53d; --yellow-bg:rgba(255,197,61,.16);
+    --red:#ff6b6b; --red-bg:rgba(255,107,107,.17);
+    --na-bg:rgba(169,182,195,.12);
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
-  header{background:var(--brand);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  header h1{font-size:18px;margin:0;font-weight:600}
-  nav{display:flex;gap:4px;flex-wrap:wrap}
-  nav button{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:14px}
-  nav button.active{background:#fff;color:var(--brand);border-color:#fff;font-weight:600}
-  #saveState{margin-left:auto;font-size:12px;opacity:.85}
-  main{max-width:1250px;margin:0 auto;padding:18px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
-  .card h2{font-size:16px;margin:0 0 12px}
-  .card h3{font-size:14px;margin:0 0 8px}
-  .row{display:flex;gap:16px;flex-wrap:wrap}
-  .col{flex:1 1 300px;min-width:260px}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
-  input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
-  input[type=checkbox]{width:auto;margin:0 6px 0 0;vertical-align:middle}
-  textarea{min-height:56px;resize:vertical}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px 12px}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);
+       font-size:17px;line-height:1.4;font-variant-numeric:tabular-nums}
+  header{position:sticky;top:0;z-index:5;background:#0b1015;border-bottom:1px solid var(--line);
+         padding:8px 14px;padding-top:max(8px,env(safe-area-inset-top));display:flex;align-items:center;gap:12px}
+  header h1{font-size:19px;margin:0;font-weight:800}
+  nav{display:flex;gap:6px}
+  nav button{background:transparent;border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:999px;cursor:pointer;font:inherit;font-size:16px;font-weight:600}
+  nav button.active{background:var(--brand);border-color:var(--brand);color:#06121f}
+  #saveState{margin-left:auto;font-size:14px;color:var(--muted)}
+  main{max-width:1150px;margin:0 auto;padding:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  h2{font-size:19px;margin:0 0 10px;font-weight:800}
+  h3{font-size:17px;margin:14px 0 8px;font-weight:700}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1 1 300px;min-width:0}
+  label{display:block;font-size:15px;color:var(--muted);margin-bottom:4px;font-weight:600}
+  input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:18px;
+       background:var(--card2);color:var(--ink);min-height:48px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);border-color:transparent}
+  input.auto,select.auto{box-shadow:inset 4px 0 0 var(--yellow);border-color:rgba(255,197,61,.6)}
+  input[type=checkbox]{width:24px;height:24px;min-height:0;margin:0 10px 0 0;vertical-align:middle;accent-color:var(--brand);flex:none}
+  textarea{min-height:70px;resize:vertical}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .grid .wide{grid-column:span 2}
   .grid .full{grid-column:1/-1}
-  .btn{background:var(--brand);color:#fff;border:0;padding:8px 14px;border-radius:6px;cursor:pointer;font:inherit;font-size:14px}
-  .btn.sec{background:#fff;color:var(--brand);border:1px solid var(--brand)}
-  .btn.danger{background:#fff;color:var(--red);border:1px solid var(--red)}
-  .btn.sm{padding:4px 9px;font-size:12px}
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-  th{font-size:12px;color:var(--muted);font-weight:600;background:#fafbfc}
-  td.num,th.num{text-align:right;white-space:nowrap}
-  td input{padding:5px 7px}
-  .scroll{overflow-x:auto}
-  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+  .btn{background:var(--brand);color:#06121f;border:0;padding:12px 18px;border-radius:10px;cursor:pointer;font:inherit;font-size:17px;font-weight:700;min-height:48px}
+  .btn.sec{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+  .btn.danger{background:transparent;color:var(--red);border:1px solid var(--red)}
+  .btn.sm{padding:8px 14px;font-size:16px;min-height:42px}
+  .btn:disabled{opacity:.5}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .actions .btn{flex:1 1 auto}
+  .muted{color:var(--muted);font-size:15px}
+  .warn{color:var(--yellow);font-size:15px;font-weight:600}
+  .hidden{display:none !important}
+  a{color:var(--brand)}
   .s-green{background:var(--green-bg);color:var(--green)}
   .s-yellow{background:var(--yellow-bg);color:var(--yellow)}
   .s-red{background:var(--red-bg);color:var(--red)}
-  .s-na{background:var(--grey-bg);color:var(--muted)}
-  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
-  .check{border-radius:10px;padding:12px 14px;border:1px solid var(--line);border-left-width:6px}
-  .check.s-green{border-left-color:var(--green)} .check.s-yellow{border-left-color:#e0a100} .check.s-red{border-left-color:var(--red)} .check.s-na{border-left-color:#b8c2cc}
-  .check .t{font-weight:600;font-size:14px;color:var(--ink)}
-  .check .big{font-size:20px;font-weight:700;margin:4px 0}
-  .check .sub{font-size:12px;color:var(--ink);opacity:.8}
-  .bar{height:8px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden;margin-top:8px}
-  .bar>div{height:100%}
-  .s-green .bar>div{background:var(--green)} .s-yellow .bar>div{background:#e0a100} .s-red .bar>div{background:var(--red)}
-  .overall{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;margin-bottom:14px;font-weight:600;flex-wrap:wrap}
-  .overall .big{font-size:22px}
-  .kv{display:grid;grid-template-columns:auto auto;gap:4px 14px;font-size:14px}
-  .kv div:nth-child(odd){color:var(--muted)}
-  .kv div:nth-child(even){text-align:right;font-weight:600}
-  .muted{color:var(--muted);font-size:12px}
-  .warn{color:var(--yellow);font-size:12px;font-weight:600}
-  .matrix td.cell{cursor:pointer;text-align:center;font-size:12px;font-weight:600;white-space:nowrap}
-  .matrix td.cell:hover{outline:2px solid var(--brand)}
-  .hidden{display:none}
-  a{color:var(--brand)}
-  .legend span{margin-right:10px}
-  .ticks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 14px}
-  .ticks label{color:var(--ink);font-size:14px;margin:0;display:flex;align-items:center;cursor:pointer}
-  .ticks label .w{margin-left:auto;color:var(--muted);font-size:12px;padding-left:8px;white-space:nowrap}
-  .ticks label .w.unset{color:var(--yellow);font-weight:600}
-  .total{font-weight:600;margin-top:8px;font-size:14px}
-  /* compare table: fixed layout, never wider than the screen */
-  .ctab{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 3px;font-size:clamp(11px,1.6vw,14px);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px}
-  .ctab th,.ctab td{border:0;padding:5px 6px;border-radius:6px;overflow:hidden;text-overflow:ellipsis}
-  .ctab col.lbl{width:24%}
-  @media (max-width:480px){ .ctab col.lbl{width:27%} }
-  .ctab th.lbl,.ctab td.lbl{color:var(--muted);font-weight:500;background:transparent;white-space:nowrap}
-  .ctab td.v{text-align:right;font-weight:600;white-space:nowrap}
-  .ctab select{font-size:inherit;padding:4px;margin-bottom:3px;text-overflow:ellipsis}
-  .ctab .opt{font-weight:700;color:var(--ink);background:transparent;padding-bottom:2px}
-  .ctab td.best{box-shadow:inset 0 0 0 2px var(--brand)}
-  .ctab tr.sec td{padding-top:10px;font-size:.85em;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:transparent}
-  .ctab .status{text-align:center;font-weight:700}
-  .ctab .nms{font-weight:400;font-size:.82em;color:var(--muted);white-space:normal;line-height:1.25;overflow-wrap:anywhere}
-  .ctab th{vertical-align:top}
-  /* list tables become cards on narrow screens */
-  @media (max-width:900px){
-    table.rt, table.rt tbody, table.rt tr, table.rt td{display:block;width:100%}
-    table.rt tr:first-child{display:none}
-    table.rt tr{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;padding:6px 8px}
-    table.rt td{border:0;padding:3px 0;text-align:right}
-    table.rt td[data-l]::before{content:attr(data-l);float:left;color:var(--muted);font-size:12px}
-    table.rt td.nm{text-align:left}
-    .matrix-wide{display:none}
-  }
-  @media (min-width:901px){ .matrix-narrow{display:none} }
-  table.inl{table-layout:fixed} table.inl input{min-width:0} table.inl .f-weight,table.inl .f-price{width:90px} table.inl td:last-child,table.inl th:last-child{width:70px}
-  table.inl th:nth-last-child(2):not(.f-notes){width:50px}
-  @media (max-width:600px){ table.inl .f-notes{display:none} table.inl .f-price{width:72px} table.inl .f-weight{width:68px} table.inl td,table.inl th{padding:4px 3px} }
-  .mrow{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 8px;border-radius:6px;margin:3px 0;cursor:pointer;font-size:13px}
+  .s-na{background:var(--na-bg);color:var(--muted)}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:800}
+  .toggle{display:flex;align-items:center;color:var(--ink);font-size:17px;margin:0;cursor:pointer;font-weight:600}
+  .formtop{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .formtop h2{margin:0;flex:1 1 auto}
+  .src{font-size:14px;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
 
-  @media (max-width:600px){ main{padding:10px} .grid .wide{grid-column:span 1} }
+  /* result */
+  .banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px;border-radius:14px;margin-bottom:12px;font-weight:700;font-size:17px}
+  .banner .big{font-size:26px;font-weight:900}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+  .tile{border-radius:12px;padding:12px}
+  .tile .t{font-size:15px;font-weight:700;color:var(--ink);opacity:.92}
+  .tile .big{font-size:24px;font-weight:900;margin:2px 0;line-height:1.15}
+  .tile .sub{font-size:14px;color:var(--ink);opacity:.8}
+  .bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:8px}
+  .bar>div{height:100%;background:currentColor}
+  .kv{display:grid;grid-template-columns:1fr auto;gap:8px 16px;font-size:17px}
+  .kv>div:nth-child(odd){color:var(--muted)}
+  .kv>div:nth-child(even){text-align:right;font-weight:800}
+
+  /* chips on Check */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:16px;color:var(--ink);margin:0;background:var(--card2);font-weight:600}
+  .chip input{width:20px;height:20px;margin:0}
+  .chip.on{border-color:var(--brand);background:rgba(90,169,255,.13)}
+  .chip .w{color:var(--muted);font-size:14px;font-weight:500}
+
+  /* extras editor */
+  .xi{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;background:var(--card2)}
+  .xr1{display:flex;gap:8px;align-items:center}
+  .xr1 input[data-f=name]{flex:1;min-width:0}
+  .ib{flex:none;width:48px;height:48px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:20px;cursor:pointer}
+  .ib.x{color:var(--red)}
+  .ib.busy{animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .xr2{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;margin-top:8px}
+  .xr2 label{font-size:13px;margin-bottom:2px}
+  .xr2 input,.xr2 select{font-size:17px;padding:9px 10px}
+  .xnote{font-size:13px;color:var(--muted);margin-top:6px;overflow-wrap:anywhere}
+
+  /* lists */
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .item .nm{font-weight:800;font-size:18px}
+  .item .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px}
+  .item .facts span{display:block;color:var(--muted);font-size:13px;font-weight:600}
+  .item .facts b{font-size:17px}
+  .up{color:var(--green)}
+
+  /* compare */
+  .ctab{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 4px;font-size:clamp(14px,2vw,17px)}
+  .ctab th,.ctab td{padding:8px;border-radius:8px;overflow:hidden;text-overflow:ellipsis;text-align:left;vertical-align:top}
+  .ctab col.lbl{width:23%}
+  .ctab .lbl{color:var(--muted);font-weight:600;white-space:nowrap}
+  .ctab td.v{text-align:right;font-weight:800;white-space:nowrap}
+  .ctab select{font-size:inherit;padding:6px;margin-bottom:4px;min-height:40px}
+  .ctab th.best{box-shadow:inset 0 0 0 2px var(--brand)}
+  .ctab tr.sec td{padding-top:12px;font-size:.78em;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .ctab .status{text-align:center;font-weight:900}
+  .ctab .cname{font-weight:500;font-size:.82em;color:var(--muted);white-space:normal;line-height:1.3;overflow-wrap:anywhere}
+
+  /* matrix */
+  .mx{width:100%;border-collapse:separate;border-spacing:4px}
+  .mx th{font-size:15px;color:var(--muted);font-weight:700;text-align:left;padding:6px}
+  .mx td{text-align:center;font-weight:800;font-size:16px;padding:10px 6px;border-radius:8px;cursor:pointer}
+  .mrow{display:flex;justify-content:space-between;gap:10px;padding:12px;border-radius:10px;margin:6px 0;cursor:pointer;font-size:16px;font-weight:600}
+
+  /* modal + toast */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:20;display:flex;align-items:flex-start;justify-content:center;padding:max(60px,env(safe-area-inset-top)) 14px 14px}
+  .modal .card{width:100%;max-width:560px}
+  #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:30;background:#26323f;border:1px solid var(--line);color:var(--ink);
+         padding:12px 16px;border-radius:12px;font-size:16px;max-width:min(92vw,560px);box-shadow:0 6px 24px rgba(0,0,0,.4)}
+
+  @media (max-width:900px){ .mx{display:none} }
+  @media (min-width:901px){ .mlist{display:none} }
+  @media (max-width:700px){
+    nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#0b1015;border-top:1px solid var(--line);
+        display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 6px max(6px,env(safe-area-inset-bottom))}
+    nav button{border:0;border-radius:10px;padding:12px 2px;font-size:16px}
+    main{padding:10px 10px 96px}
+    #toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+    .grid .wide{grid-column:1/-1}
+    .card{padding:12px}
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>Rig Weights</h1>
   <nav id="tabs">
-    <button data-tab="combo" class="active">Combination</button>
+    <button data-tab="combo" class="active">Check</button>
     <button data-tab="compare">Compare</button>
-    <button data-tab="vehicles">Vehicles</button>
-    <button data-tab="caravans">Caravans</button>
-    <button data-tab="addons">Add-ons</button>
-    <button data-tab="people">People</button>
-    <button data-tab="settings">Settings</button>
+    <button data-tab="vehicles">Cars</button>
+    <button data-tab="caravans">Vans</button>
+    <button data-tab="settings">Setup</button>
   </nav>
   <span id="saveState">Loading…</span>
 </header>
 
 <main>
-<!-- ================= COMBINATION ================= -->
+<!-- ================= CHECK ================= -->
 <section id="tab-combo">
   <div class="card">
     <div class="row">
-      <div class="col"><label>Tow vehicle</label><select id="selVehicle"></select></div>
+      <div class="col"><label>Car</label><select id="selVehicle"></select></div>
       <div class="col"><label>Caravan</label><select id="selCaravan"></select></div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="card col">
-      <h2>Who's travelling</h2>
-      <div class="ticks" id="comboPeople"></div>
-      <div class="grid" style="margin-top:10px">
-        <div><label>Other occupants / pets (kg)</label><input type="number" id="ld_occupants"></div>
-      </div>
-      <div class="total" id="peopleTotal"></div>
-    </div>
-    <div class="card col">
-      <h2>Load the rig</h2>
-      <div class="grid">
-        <div><label>Car cargo (kg) – food, tools, clothes in car</label><input type="number" id="ld_carCargo"></div>
-        <div><label>Van gear (kg) – food, clothes, gas, kit</label><input type="number" id="ld_vanGear"></div>
-        <div><label><input type="checkbox" id="ld_fullWater"> Fresh water tanks full</label>
-          <input type="number" id="ld_waterL" placeholder="Litres carried"></div>
-        <div><label>Grey water carried (L)</label><input type="number" id="ld_greyL"></div>
-        <div><label>Ball weight method</label>
-          <select id="ld_ballMode"><option value="pct">% of loaded van</option><option value="kg">Measured (kg)</option></select></div>
-        <div id="wrapBallPct"><label>Ball weight % of loaded van</label><input type="number" step="0.5" id="ld_ballPct"></div>
-        <div id="wrapBallKg" class="hidden"><label>Measured ball weight (kg)</label><input type="number" id="ld_ballKg"></div>
-      </div>
-      <p class="muted" style="margin:10px 0 0">Kerb weight includes a full tank of fuel. Water = 1 kg per litre.</p>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="card col">
-      <h2>Car mass upgrade</h2>
-      <div id="comboUpgrade"></div>
-      <h2 style="margin-top:14px">Car add-ons <span class="muted" id="comboCarName"></span></h2>
-      <div class="ticks" id="comboCarAddons"></div>
-      <div class="total" id="carAddonTotal"></div>
-      <p class="muted">Ticks are saved to the selected vehicle. Manage the list on the Add-ons tab.</p>
-    </div>
-    <div class="card col">
-      <h2>Van add-ons <span class="muted" id="comboVanName"></span></h2>
-      <div class="ticks" id="comboVanAddons"></div>
-      <div class="total" id="vanAddonTotal"></div>
-      <p class="muted">Only tick items NOT already included in the van's tare weight.</p>
     </div>
   </div>
 
   <div id="result"></div>
 
+  <div class="row">
+    <div class="card col"><h2>Car extras</h2><div id="carExtras"></div></div>
+    <div class="card col"><h2>Van extras</h2><div id="vanExtras"></div></div>
+  </div>
+
   <div class="card">
-    <h2>All combinations</h2>
-    <p class="muted" style="margin-top:-6px">Same people and loads applied to every vehicle × caravan (each with its own add-ons). Cell shows overall status and the check closest to its limit. Click a cell to open it.</p>
-    <div class="scroll" id="matrix"></div>
+    <h2>Load</h2>
+    <div class="grid">
+      <div><label>Occupants total kg</label><input type="number" inputmode="numeric" id="ld_occupants"></div>
+      <div><label>Car cargo kg</label><input type="number" inputmode="numeric" id="ld_carCargo"></div>
+      <div><label>Van gear kg</label><input type="number" inputmode="numeric" id="ld_vanGear"></div>
+      <div><label>Grey water L</label><input type="number" inputmode="numeric" id="ld_greyL"></div>
+      <div><label class="toggle" style="margin-bottom:4px"><input type="checkbox" id="ld_fullWater">Water full</label>
+        <input type="number" inputmode="numeric" id="ld_waterL" placeholder="Litres"></div>
+      <div><label>Ball weight</label>
+        <select id="ld_ballMode"><option value="pct">% of van</option><option value="kg">Measured kg</option></select></div>
+      <div id="wrapBallPct"><label>Ball %</label><input type="number" inputmode="decimal" step="0.5" id="ld_ballPct"></div>
+      <div id="wrapBallKg" class="hidden"><label>Ball kg</label><input type="number" inputmode="numeric" id="ld_ballKg"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Every combination</h2>
+    <div id="matrix"></div>
   </div>
 </section>
 
 <!-- ================= COMPARE ================= -->
 <section id="tab-compare" class="hidden">
-  <div class="card" style="padding:12px 16px">
-    <h2 style="margin-bottom:4px">Compare up to 3 combinations</h2>
-    <p class="muted" style="margin:0">Uses the same people, water, gear and ball settings as the Combination tab, and each car/van's own add-ons. Blue outline = most headroom overall.</p>
-  </div>
-  <div id="cmpGrid"></div>
+  <div class="card" style="padding:8px"><div id="cmpGrid"></div></div>
 </section>
 
-<!-- ================= VEHICLES ================= -->
+<!-- ================= CARS ================= -->
 <section id="tab-vehicles" class="hidden">
   <div class="card">
-    <h2 id="vFormTitle">Add vehicle</h2>
+    <div class="formtop"><h2 id="vFormTitle">Add car</h2>
+      <button class="btn sm" type="button" data-listing="v">Add from listing</button></div>
     <form id="vForm" autocomplete="off">
       <input type="hidden" name="id">
       <div class="grid">
-        <div class="wide"><label>Name *</label><input name="name" required></div>
-        <div><label>Make</label><input name="make"></div>
-        <div><label>Model</label><input name="model"></div>
-        <div><label>Variant</label><input name="variant"></div>
-        <div><label>Year</label><input name="year" type="number"></div>
-        <div><label>Kerb weight (kg) *</label><input name="kerb" type="number" required></div>
-        <div><label>Other fitted extras (kg, not in add-ons)</label><input name="accessories" type="number"></div>
-        <div><label>Factory GVM (kg) *</label><input name="gvm" type="number" required></div>
-        <div><label>Factory GCM (kg)</label><input name="gcm" type="number"></div>
-        <div><label>Factory braked towing (kg)</label><input name="btc" type="number"></div>
-        <div><label>Factory max tow ball (kg)</label><input name="maxBall" type="number"></div>
-        <div><label>Front axle rating (kg)</label><input name="frontAxle" type="number"></div>
-        <div><label>Rear axle rating (kg)</label><input name="rearAxle" type="number"></div>
-        <div><label>Fuel capacity (L)</label><input name="fuelL" type="number"></div>
-        <div><label>Price ($)</label><input name="price" type="number"></div>
-        <div><label>Odometer (km)</label><input name="odometer" type="number"></div>
-        <div class="wide"><label>Other mods / notes on plates</label><input name="upgrade"></div>
-        <div class="full"><label>Listing link</label><input name="link" type="url"></div>
-        <div class="full"><label>Notes</label><textarea name="notes"></textarea></div>
-        <div class="full" style="border:1px solid var(--line);border-radius:8px;padding:10px">
-          <label style="color:var(--ink);font-size:14px;font-weight:600"><input type="checkbox" name="upOn"> Mass upgrade (GVM / GCM / towing) – use these figures</label>
-          <div class="grid" style="margin-top:8px">
-            <div><label>Type</label><select name="upType"><option value="">–</option><option value="pre">Pre-rego (federal SSM)</option><option value="post">Post-rego (state engineered)</option></select></div>
-            <div><label>State certified (post-rego)</label><input name="upState" placeholder="e.g. QLD"></div>
-            <div><label>Upgraded GVM (kg)</label><input name="upGvm" type="number"></div>
-            <div><label>Upgraded GCM (kg)</label><input name="upGcm" type="number"></div>
-            <div><label>Upgraded towing (BTC) (kg)</label><input name="upBtc" type="number"></div>
-            <div><label>Upgraded max tow ball (kg)</label><input name="upBall" type="number"></div>
-            <div><label>Upgraded front axle (kg)</label><input name="upFront" type="number"></div>
-            <div><label>Upgraded rear axle (kg)</label><input name="upRear" type="number"></div>
-            <div><label>Upgrade cost ($)</label><input name="upCost" type="number"></div>
-            <div class="wide"><label>Kit / installer / plate details</label><input name="upDetails" placeholder="e.g. Lovells 4000 kit, Qld mod plate LS11/LS16"></div>
-          </div>
-          <p class="muted" style="margin:6px 0 0">Blank upgraded fields keep the factory figure. A post-rego GVM-only upgrade normally leaves GCM at factory. Untick to see the vehicle stock.</p>
-        </div>
-        <div class="full"><label>Fitted add-ons</label><div class="ticks" id="vFormAddons"></div></div>
+        <div class="full"><label>Name *</label><input name="name" required placeholder="e.g. 2019 Sahara V8 – Brisbane"></div>
+        <div class="full"><label>Listing link</label><input name="link" type="url" inputmode="url"></div>
+        <div><label>Price $</label><input name="price" type="number" inputmode="numeric"></div>
+        <div><label>Km</label><input name="odometer" type="number" inputmode="numeric"></div>
       </div>
+      <h3>Factory weights kg</h3>
+      <div class="grid">
+        <div><label>Kerb weight</label><input name="kerb" type="number" inputmode="numeric"></div>
+        <div><label>GVM</label><input name="gvm" type="number" inputmode="numeric"></div>
+        <div><label>GCM</label><input name="gcm" type="number" inputmode="numeric"></div>
+        <div><label>Braked towing</label><input name="btc" type="number" inputmode="numeric"></div>
+        <div><label>Max tow ball</label><input name="maxBall" type="number" inputmode="numeric"></div>
+        <div><label>Fuel tank L</label><input name="fuelL" type="number" inputmode="numeric"></div>
+        <div><label>Front axle</label><input name="frontAxle" type="number" inputmode="numeric"></div>
+        <div><label>Rear axle</label><input name="rearAxle" type="number" inputmode="numeric"></div>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:14px">
+        <label class="toggle"><input type="checkbox" name="upOn">Mass upgrade fitted</label>
+        <div class="grid" style="margin-top:10px">
+          <div><label>GVM</label><input name="upGvm" type="number" inputmode="numeric"></div>
+          <div><label>GCM</label><input name="upGcm" type="number" inputmode="numeric"></div>
+          <div><label>Braked towing</label><input name="upBtc" type="number" inputmode="numeric"></div>
+          <div><label>Max tow ball</label><input name="upBall" type="number" inputmode="numeric"></div>
+          <div><label>Front axle</label><input name="upFront" type="number" inputmode="numeric"></div>
+          <div><label>Rear axle</label><input name="upRear" type="number" inputmode="numeric"></div>
+          <div><label>Type</label><select name="upType"><option value="">–</option><option value="pre">Pre-rego</option><option value="post">Post-rego</option></select></div>
+          <div><label>State</label><input name="upState" placeholder="QLD"></div>
+          <div><label>Cost $</label><input name="upCost" type="number" inputmode="numeric"></div>
+          <div class="full"><label>Kit / plate</label><input name="upDetails"></div>
+        </div>
+        <p class="muted" style="margin:8px 0 0">Blank = factory figure. A post-rego GVM-only upgrade keeps the factory GCM.</p>
+      </div>
+      <h3>Extras fitted</h3>
+      <p class="muted" style="margin:-4px 0 8px">Type a name and the weight is looked up. Water and fuel tanks are counted full.</p>
+      <div id="vAddons"></div>
+      <div class="grid" style="margin-top:12px"><div class="full"><label>Notes</label><textarea name="notes"></textarea></div></div>
+      <p class="muted autoNote hidden" style="margin:10px 0 0"><span style="color:var(--yellow)">▌</span> Looked up online – check against the compliance plate.</p>
+      <div class="src" id="vSrc"></div>
       <div class="actions">
-        <button class="btn" type="submit">Save vehicle</button>
-        <button class="btn sec" type="button" id="vReset">Clear / new</button>
+        <button class="btn" type="submit">Save car</button>
+        <button class="btn sec" type="button" data-fill="v">Fill blanks</button>
+        <button class="btn sec" type="button" id="vReset">Clear</button>
       </div>
     </form>
   </div>
-  <div class="card"><h2>Vehicles</h2><div class="scroll" id="vList"></div></div>
+  <div class="items" id="vList"></div>
 </section>
 
-<!-- ================= CARAVANS ================= -->
+<!-- ================= VANS ================= -->
 <section id="tab-caravans" class="hidden">
   <div class="card">
-    <h2 id="cFormTitle">Add caravan</h2>
+    <div class="formtop"><h2 id="cFormTitle">Add caravan</h2>
+      <button class="btn sm" type="button" data-listing="c">Add from listing</button></div>
     <form id="cForm" autocomplete="off">
       <input type="hidden" name="id">
       <div class="grid">
-        <div class="wide"><label>Name *</label><input name="name" required></div>
-        <div><label>Make</label><input name="make"></div>
-        <div><label>Model</label><input name="model"></div>
-        <div><label>Year</label><input name="year" type="number"></div>
-        <div><label>Length (ft)</label><input name="lengthFt" type="number" step="0.1"></div>
-        <div><label>Tare (kg) *</label><input name="tare" type="number" required></div>
-        <div><label>ATM (kg) *</label><input name="atm" type="number" required></div>
-        <div><label>GTM (kg)</label><input name="gtm" type="number"></div>
-        <div><label>Tare ball weight (kg)</label><input name="tareBall" type="number"></div>
-        <div><label>Fresh water (L)</label><input name="freshL" type="number"></div>
-        <div><label>Grey water (L)</label><input name="greyL" type="number"></div>
-        <div><label>Lithium (Ah, 12V equiv)</label><input name="batteryAh" type="number"></div>
-        <div><label>Solar (W)</label><input name="solarW" type="number"></div>
-        <div><label>Inverter (W)</label><input name="inverterW" type="number"></div>
-        <div><label>Price ($)</label><input name="price" type="number"></div>
-        <div class="full"><label>Listing link</label><input name="link" type="url"></div>
-        <div class="full"><label>Notes</label><textarea name="notes"></textarea></div>
-        <div class="full"><label>Fitted add-ons (not included in tare)</label><div class="ticks" id="cFormAddons"></div></div>
+        <div class="full"><label>Name *</label><input name="name" required placeholder="e.g. 2020 Lotus Off Grid 19ft"></div>
+        <div class="full"><label>Listing link</label><input name="link" type="url" inputmode="url"></div>
+        <div><label>Price $</label><input name="price" type="number" inputmode="numeric"></div>
+        <div><label>Length ft</label><input name="lengthFt" type="number" inputmode="decimal" step="0.1"></div>
       </div>
+      <h3>Weights kg</h3>
+      <div class="grid">
+        <div><label>Tare</label><input name="tare" type="number" inputmode="numeric"></div>
+        <div><label>ATM</label><input name="atm" type="number" inputmode="numeric"></div>
+        <div><label>GTM</label><input name="gtm" type="number" inputmode="numeric"></div>
+        <div><label>Tare ball</label><input name="tareBall" type="number" inputmode="numeric"></div>
+      </div>
+      <h3>Off-grid (as built)</h3>
+      <div class="grid">
+        <div><label>Fresh water L</label><input name="freshL" type="number" inputmode="numeric"></div>
+        <div><label>Grey water L</label><input name="greyL" type="number" inputmode="numeric"></div>
+        <div><label>Lithium Ah</label><input name="batteryAh" type="number" inputmode="numeric"></div>
+        <div><label>Solar W</label><input name="solarW" type="number" inputmode="numeric"></div>
+        <div><label>Inverter W</label><input name="inverterW" type="number" inputmode="numeric"></div>
+      </div>
+      <h3>Extras added</h3>
+      <p class="muted" style="margin:-4px 0 8px">Type a name and the weight and capacity are looked up. Extra tanks, batteries and solar add to the van's totals.</p>
+      <div id="cAddons"></div>
+      <div class="grid" style="margin-top:12px"><div class="full"><label>Notes</label><textarea name="notes"></textarea></div></div>
+      <p class="muted autoNote hidden" style="margin:10px 0 0"><span style="color:var(--yellow)">▌</span> Looked up online – check against the compliance plate.</p>
+      <div class="src" id="cSrc"></div>
       <div class="actions">
         <button class="btn" type="submit">Save caravan</button>
-        <button class="btn sec" type="button" id="cReset">Clear / new</button>
+        <button class="btn sec" type="button" data-fill="c">Fill blanks</button>
+        <button class="btn sec" type="button" id="cReset">Clear</button>
       </div>
     </form>
   </div>
-  <div class="card"><h2>Caravans</h2><div class="scroll" id="cList"></div></div>
+  <div class="items" id="cList"></div>
 </section>
 
-<!-- ================= ADD-ONS ================= -->
-<section id="tab-addons" class="hidden">
-  <div class="card">
-    <h2>Add an add-on / upgrade</h2>
-    <form id="aForm" autocomplete="off">
-      <div class="grid">
-        <div><label>For</label><select name="appliesTo"><option value="car">Car</option><option value="van">Caravan</option></select></div>
-        <div class="wide"><label>Name *</label><input name="name" required placeholder="e.g. Dual battery, Coffee machine"></div>
-        <div><label>Weight (kg)</label><input name="weight" type="number" step="0.1"></div>
-        <div><label>Price ($)</label><input name="price" type="number"></div>
-        <div class="wide"><label>Notes</label><input name="notes" placeholder="Brand / where weight came from"></div>
-      </div>
-      <div class="actions"><button class="btn" type="submit">Add</button></div>
-    </form>
-  </div>
-  <div class="row">
-    <div class="card col"><h2>Car add-ons</h2><div class="scroll" id="aListCar"></div></div>
-    <div class="card col"><h2>Caravan add-ons</h2><div class="scroll" id="aListVan"></div></div>
-  </div>
-  <p class="muted">Edit weights and prices directly in the tables. Items with no weight are shown in amber and count as 0 kg until set.</p>
-</section>
-
-<!-- ================= PEOPLE ================= -->
-<section id="tab-people" class="hidden">
-  <div class="card">
-    <h2>Add person</h2>
-    <form id="pForm" autocomplete="off">
-      <div class="grid">
-        <div class="wide"><label>Name *</label><input name="name" required></div>
-        <div><label>Weight (kg)</label><input name="weight" type="number" step="0.1"></div>
-        <div class="wide"><label>Notes</label><input name="notes"></div>
-      </div>
-      <div class="actions"><button class="btn" type="submit">Add</button></div>
-    </form>
-  </div>
-  <div class="card"><h2>People</h2><div class="scroll" id="pList"></div>
-    <p class="muted">Tick who's travelling on the Combination tab.</p></div>
-</section>
-
-<!-- ================= SETTINGS ================= -->
+<!-- ================= SETUP ================= -->
 <section id="tab-settings" class="hidden">
   <div class="card">
-    <h2>Colour thresholds</h2>
+    <h2>Web lookup</h2>
     <div class="grid">
-      <div><label>Yellow when headroom is below (% of limit)</label><input type="number" step="0.5" id="set_yellowPct"></div>
+      <div class="full"><label>Lookup service address</label><input id="lk_url" type="url" inputmode="url" placeholder="https://rig-lookup.yourname.workers.dev"></div>
+      <div class="full"><label>Access key</label><input id="lk_key" type="password" autocomplete="off"></div>
     </div>
-    <p class="legend muted" style="margin-top:10px">
-      <span class="pill s-green">Green</span> headroom ≥ threshold
-      <span class="pill s-yellow">Yellow</span> within limit but headroom &lt; threshold
-      <span class="pill s-red">Red</span> over the limit
-      <span class="pill s-na">n/a</span> limit not entered
-    </p>
+    <div class="actions"><button class="btn sec" id="lk_test">Test</button></div>
+    <p class="muted" id="lk_state" style="margin:10px 0 0">Kept on this device only – not in backups.</p>
   </div>
   <div class="card">
-    <h2>Backup &amp; restore</h2>
-    <p class="muted" id="storageNote">Data saves automatically. On the NUC it saves to the server (with rolling backups). As a phone app it saves on the phone only – use Export regularly as a backup, and Import to move data between devices.</p>
+    <h2>Colours</h2>
+    <div class="grid"><div><label>Yellow below % spare</label><input type="number" inputmode="decimal" step="0.5" id="set_yellowPct"></div></div>
+  </div>
+  <div class="card">
+    <h2>Backup</h2>
+    <p class="muted" id="storageNote" style="margin-top:0"></p>
     <div class="actions">
-      <button class="btn sec" id="btnExport">Export JSON</button>
-      <label class="btn sec" style="display:inline-block;margin:0;color:var(--brand)">Import JSON<input type="file" id="fileImport" accept=".json,application/json" class="hidden"></label>
+      <button class="btn sec" id="btnExport">Export</button>
+      <label class="btn sec" style="margin:0;text-align:center;color:var(--brand)">Import<input type="file" id="fileImport" accept=".json,application/json" class="hidden"></label>
     </div>
   </div>
 </section>
 </main>
 
+<div class="modal hidden" id="lmodal">
+  <div class="card">
+    <h2>Add from listing</h2>
+    <label>Paste the listing link</label>
+    <input id="lm_url" type="url" inputmode="url" placeholder="https://www.carsales.com.au/…">
+    <p class="muted" id="lm_state" style="margin:10px 0 0">Reads the ad, then searches the web for anything it leaves out. Takes 10–30 seconds.</p>
+    <div class="actions"><button class="btn" id="lm_go">Look up</button><button class="btn sec" id="lm_cancel">Cancel</button></div>
+  </div>
+</div>
+<div id="toast" class="hidden"></div>
+
+<datalist id="carExtrasList">
+  <option>Bull bar</option><option>Winch</option><option>Dual battery system</option><option>Roof rack</option>
+  <option>Rear drawer system</option><option>Fridge + slide</option><option>Long range fuel tank</option><option>Water tank</option>
+  <option>Snorkel</option><option>Rear wheel carrier</option><option>Rock sliders</option><option>Recovery gear</option>
+</datalist>
+<datalist id="vanExtrasList">
+  <option>Extra solar panel</option><option>Extra lithium battery</option><option>Extra water tank</option><option>Inverter upgrade</option>
+  <option>Washing machine</option><option>Oven</option><option>Coffee machine</option><option>Second spare wheel</option>
+  <option>Generator</option><option>Bike rack</option><option>Diesel heater</option><option>Jerry cans</option>
+</datalist>
+
 <script>
 'use strict';
-/* ---------------- state & persistence ---------------- */
-let DB = null;
-let serverMode = true;
-const LS_KEY = 'rigWeightsData';
-
+/* ---------------- helpers ---------------- */
+let DB = null, serverMode = true;
+const LS_KEY = 'rigWeightsData', LK_KEY = 'rigLookup';
+let LOOK = (() => { try { return JSON.parse(localStorage.getItem(LK_KEY) || '{}'); } catch { return {}; } })();
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n = v => (v === null || v === undefined || v === '' || isNaN(+v)) ? null : +v;
 const fmt = v => v === null || v === undefined || !isFinite(v) ? '–' : Math.round(v).toLocaleString('en-AU');
+const fmt0 = v => v ? fmt(v) : '–';
 const money = v => v ? '$' + Math.round(v).toLocaleString('en-AU') : '–';
 const uid = p => p + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const SHORT = { gvm: 'GVM', gcm: 'GCM', btc: 'Towing', atm: 'Van ATM', ball: 'Tow ball', gtm: 'Van GTM' };
+const CAPS = { '': '–', water: 'Water L', fuel: 'Fuel L', battery: 'Battery Ah', solar: 'Solar W', inverter: 'Inverter W' };
+const CAPUNIT = { water: 'L', fuel: 'L', battery: 'Ah', solar: 'W', inverter: 'W' };
+const KEYF = { v: ['kerb', 'gvm', 'gcm', 'btc', 'maxBall', 'fuelL', 'frontAxle', 'rearAxle'],
+               c: ['lengthFt', 'tare', 'atm', 'gtm', 'tareBall', 'freshL', 'greyL', 'batteryAh', 'solarW', 'inverterW'] };
+const NEEDED = { v: ['kerb', 'gvm'], c: ['tare', 'atm'] };
+let toastTimer;
+function toast(t, ms = 5000) { const el = $('#toast'); el.textContent = t; el.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.add('hidden'), ms); }
 
 function defaults(d) {
   d.settings = Object.assign({ yellowPct: 5 }, d.settings || {});
-  d.loads = Object.assign({ occupants: 0, travellers: [], carCargo: 150, fullWater: true, waterL: 0, greyL: 0, vanGear: 300, ballMode: 'pct', ballPct: 10, ballKg: 300 }, d.loads || {});
-  if (!Array.isArray(d.loads.travellers)) d.loads.travellers = [];
+  d.loads = Object.assign({ occupants: 160, carCargo: 150, fullWater: true, waterL: 0, greyL: 0, vanGear: 300, ballMode: 'pct', ballPct: 10, ballKg: 300 }, d.loads || {});
+  if (Array.isArray(d.people) && Array.isArray(d.loads.travellers)) {
+    const sum = d.loads.travellers.reduce((t, id) => t + (n((d.people.find(p => p.id === id) || {}).weight) || 0), 0);
+    d.loads.occupants = sum + (n(d.loads.occupants) || 0);
+  }
+  delete d.people; delete d.loads.travellers;
   d.selection = d.selection || {};
   d.vehicles = d.vehicles || []; d.caravans = d.caravans || [];
-  d.people = d.people || []; d.addons = d.addons || [];
+  const cat = Array.isArray(d.addons) ? d.addons : [];
+  const fix = o => {
+    if (!Array.isArray(o.addons)) o.addons = [];
+    o.addons = o.addons.map(a => typeof a === 'string'
+      ? (x => x ? { id: uid('x'), name: x.name, weight: x.weight ?? null, price: x.price ?? null, on: true } : null)(cat.find(c => c.id === a))
+      : a).filter(Boolean);
+    o.addons.forEach(a => { if (a.capType === undefined) a.capType = ''; if (a.cap === undefined) a.cap = null; });
+    if (!Array.isArray(o.auto)) o.auto = [];
+  };
+  d.vehicles.forEach(fix); d.caravans.forEach(fix);
+  delete d.addons;
   if (!Array.isArray(d.compare)) d.compare = [{}, {}, {}];
   while (d.compare.length < 3) d.compare.push({});
-  d.vehicles.forEach(v => { if (!Array.isArray(v.addons)) v.addons = []; });
-  d.caravans.forEach(c => { if (!Array.isArray(c.addons)) c.addons = []; });
   return d;
 }
 
@@ -383,36 +405,48 @@ async function load() {
   try {
     const r = await fetch('api/data', { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
-    DB = defaults(await r.json());
-    setSave('Saved on server');
+    DB = defaults(await r.json()); setSave('Saved');
+    $('#storageNote').textContent = 'Saved on the NUC automatically, with rolling backups.';
   } catch (e) {
     serverMode = false;
     let local = localStorage.getItem(LS_KEY);
     if (!local) { try { local = await (await fetch('seed.json')).text(); } catch { local = '{"vehicles":[],"caravans":[]}'; } }
     DB = defaults(JSON.parse(local));
-    localStorage.setItem(LS_KEY, JSON.stringify(DB));
-    setSave('Saved on this device');
+    localStorage.setItem(LS_KEY, JSON.stringify(DB)); setSave('Saved');
+    $('#storageNote').textContent = 'Saved on this phone only. Export now and then to keep a backup.';
   }
   renderAll();
 }
-
 let saveTimer = null;
 function save() {
-  clearTimeout(saveTimer);
-  setSave('Saving…');
+  clearTimeout(saveTimer); setSave('Saving…');
   saveTimer = setTimeout(async () => {
-    if (!serverMode) { localStorage.setItem(LS_KEY, JSON.stringify(DB)); setSave('Saved on this device'); return; }
+    if (!serverMode) { localStorage.setItem(LS_KEY, JSON.stringify(DB)); setSave('Saved'); return; }
     try {
       const r = await fetch('api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(DB) });
       if (!r.ok) throw new Error((await r.json()).error || r.status);
-      setSave('Saved ' + new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }));
-    } catch (e) { setSave('⚠ Save failed: ' + e.message); }
+      setSave('Saved');
+    } catch (e) { setSave('⚠ Not saved'); toast('Not saved: ' + e.message); }
   }, 400);
 }
 function setSave(t) { $('#saveState').textContent = t; }
 
+/* ---------------- web lookup ---------------- */
+async function lookup(body) {
+  if (!LOOK.url) throw new Error('Set up Web lookup on the Setup tab first');
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 90000);
+  try {
+    const r = await fetch(LOOK.url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-App-Key': LOOK.key || '' }, body: JSON.stringify(body), signal: ctl.signal });
+    const j = await r.json().catch(() => ({ error: 'Bad reply from lookup service' }));
+    if (!r.ok || j.error) throw new Error(j.error || 'Error ' + r.status);
+    return j;
+  } catch (e) { throw new Error(e.name === 'AbortError' ? 'Lookup timed out' : e.message); }
+  finally { clearTimeout(t); }
+}
+const srcHTML = res => (res.notes ? esc(res.notes) : '') + (res.sources?.length ? ' · Sources: ' + res.sources.map(s => `<a href="${esc(s.uri)}" target="_blank" rel="noopener">${esc(s.title || 'link')}</a>`).join(', ') : '');
+
 /* ---------------- tabs ---------------- */
-const TABS = ['combo', 'compare', 'vehicles', 'caravans', 'addons', 'people', 'settings'];
+const TABS = ['combo', 'compare', 'vehicles', 'caravans', 'settings'];
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) showTab(b.dataset.tab); });
 function showTab(t) {
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('active', x.dataset.tab === t));
@@ -422,27 +456,7 @@ function showTab(t) {
   window.scrollTo(0, 0);
 }
 
-/* ---------------- helpers for people & add-ons ---------------- */
-const addonsFor = kind => DB.addons.filter(a => a.appliesTo === kind);
-const addonById = id => DB.addons.find(a => a.id === id);
-function addonSum(ids) {
-  let kg = 0, cost = 0, unset = 0;
-  (ids || []).forEach(id => { const a = addonById(id); if (!a) return; if (n(a.weight) === null) unset++; kg += n(a.weight) || 0; cost += n(a.price) || 0; });
-  return { kg, cost, unset };
-}
-function peopleSum() {
-  let kg = 0, unset = 0;
-  DB.loads.travellers.forEach(id => { const p = DB.people.find(x => x.id === id); if (!p) return; if (n(p.weight) === null) unset++; kg += n(p.weight) || 0; });
-  return { kg: kg + (n(DB.loads.occupants) || 0), unset, count: DB.loads.travellers.filter(id => DB.people.some(p => p.id === id)).length };
-}
-function tickList(items, selected, dataAttr) {
-  if (!items.length) return '<span class="muted">None yet – add some on the Add-ons / People tab.</span>';
-  return items.map(i => `<label><input type="checkbox" ${dataAttr}="${esc(i.id)}"${selected.includes(i.id) ? ' checked' : ''}>${esc(i.name)}
-    <span class="w${n(i.weight) === null ? ' unset' : ''}">${n(i.weight) === null ? 'no weight' : fmt(i.weight) + ' kg'}</span></label>`).join('');
-}
-
 /* ---------------- calculation ---------------- */
-// Effective ratings: factory figures, overridden by the mass upgrade when it is switched on.
 function ratings(v, forceUp) {
   const on = forceUp === undefined ? !!v.upOn : forceUp;
   const pick = (up, base) => on && n(v[up]) !== null ? n(v[up]) : n(v[base]);
@@ -451,339 +465,166 @@ function ratings(v, forceUp) {
 }
 const hasUpgrade = v => ['upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear'].some(k => n(v[k]) !== null);
 function upSummary(v) {
-  if (!hasUpgrade(v)) return '';
-  const f = (lbl, a, b) => n(v[b]) !== null && n(v[b]) !== n(v[a]) ? `${lbl} ${fmt(v[a])}→${fmt(v[b])}` : '';
-  return [f('GVM', 'gvm', 'upGvm'), f('GCM', 'gcm', 'upGcm'), f('Towing', 'btc', 'upBtc'), f('Ball', 'maxBall', 'upBall')].filter(Boolean).join(' · ')
-    + (v.upType ? ` (${v.upType === 'pre' ? 'pre-rego' : 'post-rego' + (v.upState ? ' ' + v.upState : '')})` : '');
+  const f = (lbl, a, b) => n(v[b]) !== null && n(v[b]) !== n(v[a]) ? `${lbl} ${fmt(v[a])} → ${fmt(v[b])}` : '';
+  return [f('GVM', 'gvm', 'upGvm'), f('GCM', 'gcm', 'upGcm'), f('Towing', 'btc', 'upBtc'), f('Ball', 'maxBall', 'upBall')].filter(Boolean).join(' · ');
 }
+// extras: weight + fluids (tanks counted full unless van water follows the Water full setting) + capacity totals
+function extras(list) {
+  let kg = 0, cost = 0, unset = 0; const cap = { water: 0, fuel: 0, battery: 0, solar: 0, inverter: 0 };
+  (list || []).forEach(a => {
+    if (!a.on) return;
+    if (n(a.weight) === null) unset++;
+    kg += n(a.weight) || 0; cost += n(a.price) || 0;
+    if (a.capType && cap[a.capType] !== undefined) cap[a.capType] = a.capType === 'inverter' ? Math.max(cap.inverter, n(a.cap) || 0) : cap[a.capType] + (n(a.cap) || 0);
+  });
+  return { kg, cost, unset, cap };
+}
+function vanTotals(c) {
+  const x = extras(c.addons);
+  return { fresh: (n(c.freshL) || 0) + x.cap.water, ah: (n(c.batteryAh) || 0) + x.cap.battery,
+    solar: (n(c.solarW) || 0) + x.cap.solar, inv: Math.max(n(c.inverterW) || 0, x.cap.inverter), x };
+}
+const missing = (o, k) => NEEDED[k].filter(f => n(o[f]) === null);
 function status(actual, limit) {
   if (limit === null || limit === undefined || actual === null) return { s: 'na', margin: null, pct: null };
-  const margin = limit - actual;
-  const pct = margin / limit * 100;
-  const y = n(DB.settings.yellowPct) ?? 5;
+  const margin = limit - actual, pct = margin / limit * 100, y = n(DB.settings.yellowPct) ?? 5;
   return { s: margin < 0 ? 'red' : pct < y ? 'yellow' : 'green', margin, pct };
 }
 const RANK = { red: 3, yellow: 2, green: 1, na: 0 };
 
 function calc(v, c, L, forceUp) {
-  const RT = ratings(v, forceUp);
-  const people = peopleSum();
-  const carAdd = addonSum(v.addons), vanAdd = addonSum(c.addons);
-  const water = L.fullWater ? (n(c.freshL) || 0) : Math.min(n(L.waterL) || 0, n(c.freshL) ?? Infinity);
+  const RT = ratings(v, forceUp), carX = extras(v.addons), VT = vanTotals(c), vanX = VT.x;
+  const carFluids = carX.cap.water + carX.cap.fuel * 0.84;
+  const water = L.fullWater ? VT.fresh : Math.min(n(L.waterL) || 0, VT.fresh);
   const grey = Math.min(n(L.greyL) || 0, n(c.greyL) ?? Infinity);
-  const loadedVan = (n(c.tare) || 0) + vanAdd.kg + water + grey + (n(L.vanGear) || 0);
+  const loadedVan = (n(c.tare) || 0) + vanX.kg + vanX.cap.fuel * 0.84 + water + grey + (n(L.vanGear) || 0);
   const ball = L.ballMode === 'kg' ? (n(L.ballKg) || 0) : Math.round(loadedVan * (n(L.ballPct) || 0) / 100);
   const vanAxle = loadedVan - ball;
-  const car = (n(v.kerb) || 0) + (n(v.accessories) || 0) + carAdd.kg + people.kg + (n(L.carCargo) || 0) + ball;
+  const car = (n(v.kerb) || 0) + carX.kg + carFluids + (n(L.occupants) || 0) + (n(L.carCargo) || 0) + ball;
   const combined = car + vanAxle;
-
   const checks = [
-    { key: 'gvm', t: 'Car vs GVM', a: car, l: RT.gvm, why: 'Loaded car incl. ball weight must not exceed GVM.' },
-    { key: 'gcm', t: 'Car + van vs GCM', a: combined, l: RT.gcm, why: 'Total of loaded car and loaded van.' },
-    { key: 'btc', t: 'Loaded van vs car towing capacity', a: loadedVan, l: RT.btc, why: 'Van’s actual loaded mass vs braked towing capacity.' },
-    { key: 'atm', t: 'Loaded van vs van ATM', a: loadedVan, l: n(c.atm), why: 'Van’s own maximum loaded mass.' },
-    { key: 'ball', t: 'Ball weight vs tow ball limit', a: ball, l: RT.maxBall, why: 'Download on the tow ball / towbar.' },
-    { key: 'gtm', t: 'Van axle load vs GTM', a: vanAxle, l: n(c.gtm), why: 'Load on the van’s own axles when hitched.' },
+    { key: 'gvm', t: 'Car vs GVM', a: car, l: RT.gvm },
+    { key: 'gcm', t: 'Car + van vs GCM', a: combined, l: RT.gcm },
+    { key: 'btc', t: 'Van vs towing limit', a: loadedVan, l: RT.btc },
+    { key: 'atm', t: 'Van vs its ATM', a: loadedVan, l: n(c.atm) },
+    { key: 'ball', t: 'Tow ball', a: ball, l: RT.maxBall },
+    { key: 'gtm', t: 'Van axles vs GTM', a: vanAxle, l: n(c.gtm) },
   ].map(x => Object.assign(x, status(x.a, x.l)));
-
-  const worst = checks.reduce((w, x) => RANK[x.s] > RANK[w] ? x.s : w, 'na');
+  const miss = [...missing(v, 'v'), ...missing(c, 'c')];
+  const worst = miss.length ? 'na' : checks.reduce((w, x) => RANK[x.s] > RANK[w] ? x.s : w, 'na');
   const tight = checks.filter(x => x.margin !== null).sort((a, b) => (RANK[b.s] - RANK[a.s]) || (a.pct - b.pct))[0] || null;
   const carRoom = Math.min(RT.gvm !== null ? RT.gvm - car : Infinity, RT.gcm !== null ? RT.gcm - combined : Infinity);
   const vanRoom = Math.min(n(c.atm) !== null ? n(c.atm) - loadedVan : Infinity, RT.btc !== null ? RT.btc - loadedVan : Infinity);
-
-  return { RT, people, carAdd, vanAdd, water, grey, loadedVan, ball, vanAxle, car, combined, checks, worst, tight,
-    carRoom: isFinite(carRoom) ? carRoom : null, vanRoom: isFinite(vanRoom) ? vanRoom : null,
-    ballPctActual: loadedVan ? ball / loadedVan * 100 : null };
+  const cost = (n(v.price) || 0) + (n(c.price) || 0) + carX.cost + vanX.cost + RT.cost;
+  return { RT, carX, vanX, VT, miss, water, loadedVan, ball, vanAxle, car, combined, checks, worst, tight, cost,
+    carRoom: isFinite(carRoom) ? carRoom : null, vanRoom: isFinite(vanRoom) ? vanRoom : null };
 }
+const signed = m => m === null ? 'n/a' : (m < 0 ? '−' : '+') + fmt(Math.abs(m));
+const WORD = { green: 'GREEN', yellow: 'YELLOW', red: 'RED', na: '?' };
+const LABEL = { kerb: 'kerb weight', gvm: 'GVM', tare: 'tare', atm: 'ATM' };
 
-/* ---------------- combination tab ---------------- */
+/* ---------------- CHECK tab ---------------- */
 const loadFields = ['occupants', 'carCargo', 'vanGear', 'waterL', 'greyL', 'ballPct', 'ballKg'];
-
-function fillSelect(sel, items, current) {
-  sel.innerHTML = items.length ? items.map(i => `<option value="${esc(i.id)}"${i.id === current ? ' selected' : ''}>${esc(i.name)}</option>`).join('')
-    : '<option value="">– add one first –</option>';
-}
+const optList = (items, cur) => items.length ? items.map(i => `<option value="${esc(i.id)}"${i.id === cur ? ' selected' : ''}>${esc(i.name)}</option>`).join('') : '<option value="">– add one first –</option>';
+const capTxt = a => a.capType && n(a.cap) ? ` · ${fmt(a.cap)} ${CAPUNIT[a.capType]}` : '';
 
 function renderCombo() {
   const { vehicles, caravans, selection: S, loads: L } = DB;
   if (!vehicles.find(v => v.id === S.vehicleId)) S.vehicleId = vehicles[0]?.id;
   if (!caravans.find(c => c.id === S.caravanId)) S.caravanId = caravans[0]?.id;
-  fillSelect($('#selVehicle'), vehicles, S.vehicleId);
-  fillSelect($('#selCaravan'), caravans, S.caravanId);
+  $('#selVehicle').innerHTML = optList(vehicles, S.vehicleId);
+  $('#selCaravan').innerHTML = optList(caravans, S.caravanId);
   const v = vehicles.find(x => x.id === S.vehicleId), c = caravans.find(x => x.id === S.caravanId);
 
   loadFields.forEach(f => { const el = $('#ld_' + f); if (document.activeElement !== el) el.value = L[f] ?? ''; });
-  $('#ld_fullWater').checked = !!L.fullWater;
-  $('#ld_waterL').disabled = !!L.fullWater;
+  $('#ld_fullWater').checked = !!L.fullWater; $('#ld_waterL').disabled = !!L.fullWater;
   $('#ld_ballMode').value = L.ballMode;
   $('#wrapBallPct').classList.toggle('hidden', L.ballMode !== 'pct');
   $('#wrapBallKg').classList.toggle('hidden', L.ballMode !== 'kg');
 
-  // people
-  $('#comboPeople').innerHTML = tickList(DB.people, L.travellers, 'data-person');
-  const ps = peopleSum();
-  $('#peopleTotal').innerHTML = `Occupants: ${fmt(ps.kg)} kg` + (ps.unset ? ` <span class="warn">(${ps.unset} without weight)</span>` : '');
+  const chips = (list, kind) => list.length ? `<div class="chips">${list.map(a =>
+    `<label class="chip${a.on ? ' on' : ''}"><input type="checkbox" data-${kind}="${esc(a.id)}"${a.on ? ' checked' : ''}>${esc(a.name)}<span class="w">${n(a.weight) === null ? '? kg' : fmt(a.weight) + ' kg'}${capTxt(a)}</span></label>`).join('')}</div>`
+    : `<p class="muted" style="margin:0">None yet – add them on the ${kind === 'cx' ? 'Cars' : 'Vans'} tab.</p>`;
+  $('#carExtras').innerHTML = !v ? '' :
+    (hasUpgrade(v) ? `<label class="toggle" style="margin-bottom:6px"><input type="checkbox" id="upToggle"${v.upOn ? ' checked' : ''}>Mass upgrade on</label>
+      <p class="muted" style="margin:0 0 12px">${esc(upSummary(v))}</p>` : '') + chips(v.addons, 'cx');
+  $('#vanExtras').innerHTML = !c ? '' : chips(c.addons, 'vx');
 
-  // add-ons
-  $('#comboCarName').textContent = v ? '– ' + v.name : '';
-  $('#comboUpgrade').innerHTML = !v ? '' : hasUpgrade(v)
-    ? `<label style="color:var(--ink);font-size:14px"><input type="checkbox" id="upToggle"${v.upOn ? ' checked' : ''}> Use upgraded figures</label>
-       <div class="muted" style="margin-top:4px">${esc(upSummary(v))}${v.upDetails ? ' – ' + esc(v.upDetails) : ''}</div>`
-    : '<span class="muted">No upgrade entered for this vehicle. Add one on the Vehicles tab (Edit → Mass upgrade).</span>';
-  $('#comboVanName').textContent = c ? '– ' + c.name : '';
-  $('#comboCarAddons').innerHTML = v ? tickList(addonsFor('car'), v.addons, 'data-caraddon') : '';
-  $('#comboVanAddons').innerHTML = c ? tickList(addonsFor('van'), c.addons, 'data-vanaddon') : '';
-  const ca = v ? addonSum(v.addons) : { kg: 0, cost: 0, unset: 0 }, va = c ? addonSum(c.addons) : { kg: 0, cost: 0, unset: 0 };
-  $('#carAddonTotal').innerHTML = `Car add-ons: ${fmt(ca.kg)} kg · ${money(ca.cost)}` + (ca.unset ? ` <span class="warn">(${ca.unset} without weight)</span>` : '');
-  $('#vanAddonTotal').innerHTML = `Van add-ons: ${fmt(va.kg)} kg · ${money(va.cost)}` + (va.unset ? ` <span class="warn">(${va.unset} without weight)</span>` : '');
-
-  $('#result').innerHTML = (v && c) ? resultHTML(v, c, calc(v, c, L)) : '<div class="card muted">Add at least one vehicle and one caravan.</div>';
+  $('#result').innerHTML = (v && c) ? resultHTML(v, c, calc(v, c, L)) : '<div class="card muted">Add a car and a caravan to start.</div>';
   renderMatrix();
 }
 
-const label = { green: 'GREEN – plenty of headroom', yellow: 'YELLOW – within limits but close', red: 'RED – over a limit', na: 'Not enough data' };
-
 function resultHTML(v, c, r) {
+  if (r.miss.length) return `<div class="banner s-na"><span>Missing ${r.miss.map(m => LABEL[m]).join(', ')} – edit the ${missing(v, 'v').length ? 'car' : 'van'} or tap Fill blanks.</span></div>`;
   const over = r.checks.filter(x => x.s === 'red');
-  const cards = r.checks.map(x => {
-    const pctUsed = x.l ? Math.min(100, x.a / x.l * 100) : 0;
-    const big = x.s === 'na' ? 'n/a' : x.margin < 0 ? `Over by ${fmt(-x.margin)} kg` : `${fmt(x.margin)} kg spare`;
-    const sub = x.s === 'na' ? `Actual ${fmt(x.a)} kg – limit not entered` :
-      `${fmt(x.a)} of ${fmt(x.l)} kg (${x.margin < 0 ? Math.abs(x.pct).toFixed(1) + '% over' : x.pct.toFixed(1) + '% headroom'})`;
-    return `<div class="check s-${x.s}"><div class="t">${esc(x.t)}</div><div class="big">${big}</div>
-      <div class="sub">${sub}</div>${x.s !== 'na' ? `<div class="bar"><div style="width:${pctUsed}%"></div></div>` : ''}
-      <div class="muted" style="margin-top:6px">${esc(x.why)}</div></div>`;
-  }).join('');
-  const unset = r.people.unset + r.carAdd.unset + r.vanAdd.unset;
-  const price = (n(v.price) || 0) + (n(c.price) || 0) + r.carAdd.cost + r.vanAdd.cost + r.RT.cost;
-  let upPanel = '';
+  const tiles = r.checks.filter(x => x.s !== 'na').map(x => `<div class="tile s-${x.s}"><div class="t">${x.t}</div>
+      <div class="big">${x.margin < 0 ? 'Over ' + fmt(-x.margin) : fmt(x.margin) + ' spare'}</div>
+      <div class="sub">${fmt(x.a)} of ${fmt(x.l)} kg</div><div class="bar"><div style="width:${Math.min(100, x.a / x.l * 100)}%"></div></div></div>`).join('');
+  const unset = r.carX.unset + r.vanX.unset;
+  let upRow = '';
   if (hasUpgrade(v)) {
     const st = calc(v, c, DB.loads, false), up = calc(v, c, DB.loads, true);
-    const line = (lbl, x) => `<tr><td>${lbl}</td><td><span class="pill s-${x.worst}">${x.worst.toUpperCase()}</span></td>` +
-      x.checks.map(k => `<td class="num s-${k.s}">${k.margin === null ? 'n/a' : (k.margin < 0 ? '−' : '+') + fmt(Math.abs(k.margin))}</td>`).join('') + '</tr>';
-    upPanel = `<div class="card"><h2>Stock vs upgraded – this combination</h2><div class="scroll"><table style="table-layout:fixed;font-size:13px">
-      <tr><th style="width:18%"></th><th style="width:16%">Overall</th>${st.checks.map(k => `<th class="num">${SHORT[k.key]}</th>`).join('')}</tr>
-      ${line('Stock', st)}${line('Upgraded', up)}</table></div>
-      <p class="muted" style="margin:6px 0 0">Headroom in kg (+ spare / − over). Currently using: <b>${r.RT.on ? 'upgraded' : 'stock'}</b> figures.</p></div>`;
+    const cell = x => `<span class="pill s-${x.worst}">${WORD[x.worst]}</span> ${x.tight ? (x.tight.margin < 0 ? 'over ' + fmt(-x.tight.margin) : fmt(x.tight.margin) + ' spare') : ''}`;
+    upRow = `<div class="kv" style="margin-top:12px"><div>Without upgrade</div><div>${cell(st)}</div><div>With upgrade</div><div>${cell(up)}</div></div>`;
   }
-
+  const autoN = (v.auto?.length || 0) + (c.auto?.length || 0);
   return `
-  <div class="overall s-${r.worst}"><span class="big">${label[r.worst]}</span>
-    <span>${over.length ? over.map(x => `${esc(x.t)}: over by ${fmt(-x.margin)} kg`).join(' · ') :
-      r.tight ? `Closest to its limit: ${esc(r.tight.t)} – ${fmt(r.tight.margin)} kg spare` : ''}</span>
-    ${unset ? `<span class="warn">⚠ ${unset} selected item(s) have no weight – counted as 0 kg</span>` : ''}</div>
-  <div class="card"><h2>${esc(v.name)} &nbsp;+&nbsp; ${esc(c.name)} ${r.RT.on ? '<span class="pill s-green">upgraded ratings</span>' : hasUpgrade(v) ? '<span class="pill s-na">stock ratings</span>' : ''}</h2><div class="checks">${cards}</div></div>
-  ${upPanel}
-  <div class="row">
-    <div class="card col"><h2>Masses</h2><div class="kv">
-      <div>Car kerb</div><div>${fmt(v.kerb)} kg</div>
-      <div>+ Car add-ons</div><div>${fmt(r.carAdd.kg)} kg</div>
-      <div>+ Other fitted extras</div><div>${fmt(n(v.accessories) || 0)} kg</div>
-      <div>+ Occupants</div><div>${fmt(r.people.kg)} kg</div>
-      <div>+ Car cargo</div><div>${fmt(n(DB.loads.carCargo) || 0)} kg</div>
-      <div>+ Ball weight</div><div>${fmt(r.ball)} kg (${r.ballPctActual ? r.ballPctActual.toFixed(1) : '–'}%)</div>
-      <div><b>Loaded car</b></div><div>${fmt(r.car)} kg</div>
-      <div>Van tare</div><div>${fmt(c.tare)} kg</div>
-      <div>+ Van add-ons</div><div>${fmt(r.vanAdd.kg)} kg</div>
-      <div>+ Water (fresh + grey)</div><div>${fmt(r.water + r.grey)} kg</div>
-      <div>+ Van gear</div><div>${fmt(n(DB.loads.vanGear) || 0)} kg</div>
-      <div><b>Loaded van</b></div><div>${fmt(r.loadedVan)} kg</div>
-      <div>Van axle load (hitched)</div><div>${fmt(r.vanAxle)} kg</div>
-      <div><b>Combined</b></div><div>${fmt(r.combined)} kg</div>
-    </div></div>
-    <div class="card col"><h2>What's left</h2><div class="kv">
-      <div>More you can put in the car</div><div class="${r.carRoom < 0 ? 's-red' : ''}">${fmt(r.carRoom)} kg</div>
-      <div>More you can put in the van</div><div class="${r.vanRoom < 0 ? 's-red' : ''}">${fmt(r.vanRoom)} kg</div>
-      <div>Car payload (GVM − kerb)</div><div>${fmt(r.RT.gvm - n(v.kerb))} kg</div>
-      <div>Van payload (ATM − tare)</div><div>${fmt(n(c.atm) - n(c.tare))} kg</div>
-      ${r.RT.front || r.RT.rear ? `<div>Axle ratings F / R</div><div>${fmt(r.RT.front)} / ${fmt(r.RT.rear)} kg</div>` : ''}
-    </div>
-    <p class="muted">"More you can put in the car" is limited by both GVM and GCM. "More in the van" is limited by both van ATM and the car's towing capacity. Axle loads need a weighbridge to check.</p>
-    <h3 style="margin-top:14px">Cost</h3><div class="kv">
-      <div>Car</div><div>${money(v.price)}</div>
-      <div>Caravan</div><div>${money(c.price)}</div>
-      <div>Mass upgrade</div><div>${money(r.RT.cost)}</div>
-      <div>Car add-ons</div><div>${money(r.carAdd.cost)}</div>
-      <div>Van add-ons</div><div>${money(r.vanAdd.cost)}</div>
-      <div><b>Total</b></div><div>${money(price)}</div>
-    </div></div>
-  </div>`;
+  <div class="banner s-${r.worst}"><span class="big">${WORD[r.worst]}</span>
+    <span>${over.length ? over.map(x => `${x.t}: over by ${fmt(-x.margin)} kg`).join(' · ') :
+      r.tight ? `Tightest: ${r.tight.t} – ${fmt(r.tight.margin)} kg spare` : ''}</span></div>
+  ${unset ? `<p class="warn" style="margin:-4px 0 10px">${unset} extra(s) have no weight – counted as 0 kg</p>` : ''}
+  ${autoN ? `<p class="warn" style="margin:-4px 0 10px">Uses ${autoN} looked-up figure(s) – check them on the compliance plates</p>` : ''}
+  <div class="card"><div class="tiles">${tiles}</div>${upRow}</div>
+  <div class="card"><div class="kv">
+    <div>Loaded car</div><div>${fmt(r.car)} kg</div>
+    <div>Loaded van</div><div>${fmt(r.loadedVan)} kg</div>
+    <div>Ball weight</div><div>${fmt(r.ball)} kg</div>
+    <div>Room left in car</div><div class="${r.carRoom < 0 ? 's-red' : ''}">${fmt(r.carRoom)} kg</div>
+    <div>Room left in van</div><div class="${r.vanRoom < 0 ? 's-red' : ''}">${fmt(r.vanRoom)} kg</div>
+    <div>Van water / battery / solar</div><div>${fmt0(r.VT.fresh)} L · ${fmt0(r.VT.ah)} Ah · ${fmt0(r.VT.solar)} W</div>
+    <div>Total cost</div><div>${money(r.cost)}</div>
+  </div></div>`;
 }
 
 function renderMatrix() {
   const { vehicles, caravans, loads: L } = DB;
   if (!vehicles.length || !caravans.length) { $('#matrix').innerHTML = ''; return; }
-  const cellTxt = t => !t ? 'n/a' : t.margin < 0 ? `Over ${fmt(-t.margin)} kg` : `${fmt(t.margin)} kg`;
-  let h = '<table class="matrix matrix-wide"><tr><th>Vehicle \\ Caravan</th>' + caravans.map(c => `<th>${esc(c.name)}</th>`).join('') + '</tr>';
-  let m = '<div class="matrix-narrow">';
+  const txt = r => r.miss.length ? 'Missing data' : !r.tight ? 'n/a' : r.tight.margin < 0 ? `Over ${fmt(-r.tight.margin)}` : `${fmt(r.tight.margin)} spare`;
+  let t = '<table class="mx"><tr><th></th>' + caravans.map(c => `<th>${esc(c.name)}</th>`).join('') + '</tr>', l = '<div class="mlist">';
   vehicles.forEach(v => {
-    h += `<tr><th>${esc(v.name)}</th>`;
-    m += `<h3 style="margin:12px 0 4px">${esc(v.name)}</h3>`;
+    t += `<tr><th>${esc(v.name)}</th>`; l += `<h3 style="margin:14px 0 4px">${esc(v.name)}</h3>`;
     caravans.forEach(c => {
-      const r = calc(v, c, L), t = r.tight;
-      h += `<td class="cell s-${r.worst}" data-v="${esc(v.id)}" data-c="${esc(c.id)}" title="${esc(t ? t.t : '')}">${cellTxt(t)}<div style="font-weight:400">${t ? esc(SHORT[t.key]) : ''}</div></td>`;
-      m += `<div class="mrow cell s-${r.worst}" data-v="${esc(v.id)}" data-c="${esc(c.id)}"><span>${esc(c.name)}</span><b style="white-space:nowrap">${cellTxt(t)}${t ? ' · ' + esc(SHORT[t.key]) : ''}</b></div>`;
+      const r = calc(v, c, L), k = r.tight && !r.miss.length ? SHORT[r.tight.key] : '';
+      t += `<td class="cell s-${r.worst}" data-v="${esc(v.id)}" data-c="${esc(c.id)}">${txt(r)}<div style="font-weight:500;font-size:14px">${k}</div></td>`;
+      l += `<div class="mrow cell s-${r.worst}" data-v="${esc(v.id)}" data-c="${esc(c.id)}"><span>${esc(c.name)}</span><b style="white-space:nowrap">${txt(r)}</b></div>`;
     });
-    h += '</tr>';
+    t += '</tr>';
   });
-  $('#matrix').innerHTML = h + '</table>' + m + '</div>';
+  $('#matrix').innerHTML = t + '</table>' + l + '</div>';
 }
+
 $('#matrix').addEventListener('click', e => {
-  const td = e.target.closest('.cell'); if (!td) return;
-  DB.selection.vehicleId = td.dataset.v; DB.selection.caravanId = td.dataset.c; save(); renderCombo(); window.scrollTo(0, 0);
+  const el = e.target.closest('.cell'); if (!el) return;
+  DB.selection.vehicleId = el.dataset.v; DB.selection.caravanId = el.dataset.c; save(); renderCombo(); window.scrollTo(0, 0);
 });
 $('#selVehicle').addEventListener('change', e => { DB.selection.vehicleId = e.target.value; save(); renderCombo(); });
 $('#selCaravan').addEventListener('change', e => { DB.selection.caravanId = e.target.value; save(); renderCombo(); });
 loadFields.forEach(f => $('#ld_' + f).addEventListener('input', e => { DB.loads[f] = n(e.target.value); save(); renderCombo(); }));
 $('#ld_fullWater').addEventListener('change', e => { DB.loads.fullWater = e.target.checked; save(); renderCombo(); });
 $('#ld_ballMode').addEventListener('change', e => { DB.loads.ballMode = e.target.value; save(); renderCombo(); });
-
-function toggleIn(arr, id, on) { const i = arr.indexOf(id); if (on && i < 0) arr.push(id); if (!on && i >= 0) arr.splice(i, 1); }
-$('#comboPeople').addEventListener('change', e => { const id = e.target.dataset.person; if (!id) return; toggleIn(DB.loads.travellers, id, e.target.checked); save(); renderCombo(); });
-$('#comboUpgrade').addEventListener('change', e => {
-  if (e.target.id !== 'upToggle') return; const v = DB.vehicles.find(x => x.id === DB.selection.vehicleId);
-  if (!v) return; v.upOn = e.target.checked; save(); renderCombo(); renderLists();
+$('#carExtras').addEventListener('change', e => {
+  const v = DB.vehicles.find(x => x.id === DB.selection.vehicleId); if (!v) return;
+  if (e.target.id === 'upToggle') v.upOn = e.target.checked;
+  else if (e.target.dataset.cx) { const a = v.addons.find(x => x.id === e.target.dataset.cx); if (a) a.on = e.target.checked; }
+  save(); renderCombo(); renderLists();
 });
-$('#comboCarAddons').addEventListener('change', e => {
-  const id = e.target.dataset.caraddon; const v = DB.vehicles.find(x => x.id === DB.selection.vehicleId);
-  if (!id || !v) return; toggleIn(v.addons, id, e.target.checked); save(); renderCombo(); renderLists();
-});
-$('#comboVanAddons').addEventListener('change', e => {
-  const id = e.target.dataset.vanaddon; const c = DB.caravans.find(x => x.id === DB.selection.caravanId);
-  if (!id || !c) return; toggleIn(c.addons, id, e.target.checked); save(); renderCombo(); renderLists();
+$('#vanExtras').addEventListener('change', e => {
+  const c = DB.caravans.find(x => x.id === DB.selection.caravanId); if (!c || !e.target.dataset.vx) return;
+  const a = c.addons.find(x => x.id === e.target.dataset.vx); if (a) a.on = e.target.checked;
+  save(); renderCombo(); renderLists();
 });
 
-/* ---------------- CRUD (vehicles & caravans) ---------------- */
-const numV = ['year', 'kerb', 'accessories', 'gvm', 'gcm', 'btc', 'maxBall', 'frontAxle', 'rearAxle', 'fuelL', 'price', 'odometer', 'upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear', 'upCost'];
-const numC = ['year', 'lengthFt', 'tare', 'atm', 'gtm', 'tareBall', 'freshL', 'greyL', 'batteryAh', 'solarW', 'inverterW', 'price'];
-
-function readForm(form, nums) {
-  const o = {};
-  [...form.elements].forEach(el => { if (el.name) o[el.name] = el.type === 'checkbox' ? el.checked : nums.includes(el.name) ? n(el.value) : String(el.value).trim(); });
-  return o;
-}
-function writeForm(form, obj) { [...form.elements].forEach(el => { if (!el.name) return; if (el.type === 'checkbox') el.checked = !!obj[el.name]; else el.value = obj[el.name] ?? ''; }); }
-
-function setupCrud(kind) {
-  const isV = kind === 'v';
-  const form = $(isV ? '#vForm' : '#cForm');
-  const listKey = isV ? 'vehicles' : 'caravans';
-  const nums = isV ? numV : numC;
-  const title = $(isV ? '#vFormTitle' : '#cFormTitle');
-  const noun = isV ? 'vehicle' : 'caravan';
-  const addonBox = $(isV ? '#vFormAddons' : '#cFormAddons');
-  const addonKind = isV ? 'car' : 'van';
-  const renderAddonBox = sel => { addonBox.innerHTML = tickList(addonsFor(addonKind), sel || [], 'data-formaddon'); };
-
-  const reset = () => { form.reset(); form.elements.id.value = ''; title.textContent = 'Add ' + noun; renderAddonBox([]); };
-  form._reset = reset; form._renderAddons = renderAddonBox;
-  $(isV ? '#vReset' : '#cReset').addEventListener('click', reset);
-  const edit = item => { writeForm(form, item); renderAddonBox(item.addons); title.textContent = 'Edit ' + noun + ': ' + item.name; window.scrollTo(0, 0); };
-
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const o = readForm(form, nums);
-    o.addons = [...addonBox.querySelectorAll('input[data-formaddon]:checked')].map(x => x.dataset.formaddon);
-    const list = DB[listKey];
-    if (o.id) { const i = list.findIndex(x => x.id === o.id); list[i] = Object.assign(list[i], o); }
-    else { o.id = uid(kind); list.push(o); }
-    save(); reset(); renderLists();
-  });
-
-  $(isV ? '#vList' : '#cList').addEventListener('click', e => {
-    const b = e.target.closest('button[data-act]'); if (!b) return;
-    const list = DB[listKey]; const item = list.find(x => x.id === b.dataset.id); if (!item) return;
-    if (b.dataset.act === 'edit') edit(item);
-    if (b.dataset.act === 'copy') { const cp = JSON.parse(JSON.stringify(item)); cp.id = uid(kind); cp.name = item.name + ' (copy)'; list.push(cp); save(); renderLists(); edit(cp); }
-    if (b.dataset.act === 'del' && confirm(`Delete "${item.name}"?`)) { DB[listKey] = list.filter(x => x !== item); save(); renderLists(); }
-    if (b.dataset.act === 'use') { DB.selection[isV ? 'vehicleId' : 'caravanId'] = item.id; save(); showTab('combo'); }
-  });
-}
-
-const rowBtns = id => `<button class="btn sm" data-act="use" data-id="${esc(id)}">Use</button>
-  <button class="btn sm sec" data-act="edit" data-id="${esc(id)}">Edit</button>
-  <button class="btn sm sec" data-act="copy" data-id="${esc(id)}">Copy</button>
-  <button class="btn sm danger" data-act="del" data-id="${esc(id)}">Delete</button>`;
-const addonNames = ids => (ids || []).map(id => addonById(id)?.name).filter(Boolean).join(', ');
-const nameCell = o => `<b>${esc(o.name)}</b>${o.link ? ` <a href="${esc(o.link)}" target="_blank" rel="noopener">listing</a>` : ''}
-  ${o.kerb !== undefined && hasUpgrade(o) ? `<div class="muted">Upgrade${o.upOn ? ' (ON)' : ' (off)'}: ${esc(upSummary(o))}</div>` : ''}${o.upgrade ? `<div class="muted">${esc(o.upgrade)}</div>` : ''}${o.addons?.length ? `<div class="muted">Add-ons: ${esc(addonNames(o.addons))}</div>` : ''}${o.notes ? `<div class="muted">${esc(o.notes)}</div>` : ''}`;
-
-function renderLists() {
-  $('#vList').innerHTML = DB.vehicles.length ? `<table class="rt"><tr><th>Vehicle</th><th class="num">Kerb</th><th class="num">Add-ons kg</th><th class="num">GVM</th><th class="num">Payload left</th><th class="num">GCM</th><th class="num">BTC</th><th class="num">Ball</th><th class="num">Price</th><th class="num">Km</th><th></th></tr>` +
-    DB.vehicles.map(v => { const a = addonSum(v.addons).kg + (n(v.accessories) || 0);
-      const R = ratings(v), up = (val, base) => R.on && val !== n(v[base]) ? `<b style="color:var(--green)">${fmt(val)}↑</b>` : fmt(val);
-      return `<tr><td class="nm">${nameCell(v)}</td><td class="num" data-l="Kerb">${fmt(v.kerb)}</td><td class="num" data-l="Add-ons kg">${fmt(a)}</td><td class="num" data-l="GVM">${up(R.gvm, 'gvm')}</td>
-      <td class="num" data-l="Payload left">${fmt(R.gvm - n(v.kerb) - a)}</td><td class="num" data-l="GCM">${up(R.gcm, 'gcm')}</td><td class="num" data-l="Towing capacity">${up(R.btc, 'btc')}</td><td class="num" data-l="Max ball">${up(R.maxBall, 'maxBall')}</td>
-      <td class="num" data-l="Price">${money(v.price)}</td><td class="num" data-l="Km">${fmt(v.odometer)}</td><td class="nm" style="white-space:nowrap">${rowBtns(v.id)}</td></tr>`; }).join('') + '</table>'
-    : '<p class="muted">No vehicles yet.</p>';
-
-  $('#cList').innerHTML = DB.caravans.length ? `<table class="rt"><tr><th>Caravan</th><th class="num">Ft</th><th class="num">Tare</th><th class="num">Add-ons kg</th><th class="num">ATM</th><th class="num">Payload left</th><th class="num">GTM</th><th class="num">Ball</th><th class="num">Water L</th><th class="num">Ah</th><th class="num">Solar W</th><th class="num">Inverter W</th><th class="num">Price</th><th></th></tr>` +
-    DB.caravans.map(c => { const a = addonSum(c.addons).kg;
-      return `<tr><td class="nm">${nameCell(c)}</td><td class="num" data-l="Length ft">${c.lengthFt ?? '–'}</td><td class="num" data-l="Tare">${fmt(c.tare)}</td><td class="num" data-l="Add-ons kg">${fmt(a)}</td><td class="num" data-l="ATM">${fmt(c.atm)}</td>
-      <td class="num" data-l="Payload left">${fmt(n(c.atm) - n(c.tare) - a)}</td><td class="num" data-l="GTM">${fmt(c.gtm)}</td><td class="num" data-l="Tare ball">${fmt(c.tareBall)}</td><td class="num" data-l="Fresh water L">${fmt(c.freshL)}</td>
-      <td class="num" data-l="Lithium Ah">${fmt(c.batteryAh)}</td><td class="num" data-l="Solar W">${fmt(c.solarW)}</td><td class="num" data-l="Inverter W">${fmt(c.inverterW)}</td><td class="num" data-l="Price">${money(c.price)}</td>
-      <td class="nm" style="white-space:nowrap">${rowBtns(c.id)}</td></tr>`; }).join('') + '</table>'
-    : '<p class="muted">No caravans yet.</p>';
-
-  renderAddonTables(); renderPeople();
-  // refresh form tick boxes (keep current ticks)
-  ['#vForm', '#cForm'].forEach(sel => { const f = $(sel); const box = f.querySelector('.ticks');
-    const cur = [...box.querySelectorAll('input:checked')].map(x => x.dataset.formaddon); f._renderAddons && f._renderAddons(cur); });
-}
-
-/* ---------------- add-ons & people tables (inline editable) ---------------- */
-function usageCount(id) { return DB.vehicles.filter(v => v.addons.includes(id)).length + DB.caravans.filter(c => c.addons.includes(id)).length; }
-function inlineTable(items, kind) {
-  if (!items.length) return '<p class="muted">None yet.</p>';
-  const cols = kind === 'person' ? ['name', 'weight', 'notes'] : ['name', 'weight', 'price', 'notes'];
-  const head = { name: 'Name', weight: 'Weight kg', price: 'Price $', notes: 'Notes' };
-  return `<table class="inl"><tr>${cols.map(c => `<th class="f-${c}${c === 'weight' || c === 'price' ? ' num' : ''}">${head[c]}</th>`).join('')}${kind !== 'person' ? '<th class="num">Used</th>' : ''}<th></th></tr>` +
-    items.map(i => `<tr>${cols.map(c => `<td class="f-${c}${c === 'weight' || c === 'price' ? ' num' : ''}"><input data-${kind}="${esc(i.id)}" data-field="${c}" ${c === 'weight' || c === 'price' ? 'type="number" step="0.1"' : ''} value="${esc(i[c] ?? '')}"${c === 'weight' && n(i.weight) === null ? ' style="border-color:#e0a100"' : ''}></td>`).join('')}
-      ${kind !== 'person' ? `<td class="num">${usageCount(i.id)}</td>` : ''}<td><button class="btn sm danger" data-del${kind}="${esc(i.id)}">Delete</button></td></tr>`).join('') + '</table>';
-}
-function renderAddonTables() {
-  $('#aListCar').innerHTML = inlineTable(addonsFor('car'), 'addon');
-  $('#aListVan').innerHTML = inlineTable(addonsFor('van'), 'addon');
-}
-function renderPeople() { $('#pList').innerHTML = inlineTable(DB.people, 'person'); }
-
-function inlineEdit(e, kind, list) {
-  const id = e.target.dataset[kind]; if (!id) return;
-  const item = list().find(x => x.id === id); if (!item) return;
-  const f = e.target.dataset.field;
-  item[f] = (f === 'weight' || f === 'price') ? n(e.target.value) : e.target.value;
-  save();
-}
-['#aListCar', '#aListVan'].forEach(sel => {
-  $(sel).addEventListener('change', e => { inlineEdit(e, 'addon', () => DB.addons); renderLists(); });
-  $(sel).addEventListener('click', e => {
-    const id = e.target.dataset.deladdon; if (!id) return;
-    const a = addonById(id); const used = usageCount(id);
-    if (!confirm(`Delete "${a.name}"?` + (used ? ` It is fitted to ${used} vehicle(s)/caravan(s) and will be removed from them.` : ''))) return;
-    DB.addons = DB.addons.filter(x => x.id !== id);
-    DB.vehicles.forEach(v => toggleIn(v.addons, id, false)); DB.caravans.forEach(c => toggleIn(c.addons, id, false));
-    save(); renderLists();
-  });
-});
-$('#pList').addEventListener('change', e => { inlineEdit(e, 'person', () => DB.people); });
-$('#pList').addEventListener('click', e => {
-  const id = e.target.dataset.delperson; if (!id) return;
-  const p = DB.people.find(x => x.id === id); if (!confirm(`Delete "${p.name}"?`)) return;
-  DB.people = DB.people.filter(x => x.id !== id); toggleIn(DB.loads.travellers, id, false); save(); renderPeople();
-});
-$('#aForm').addEventListener('submit', e => {
-  e.preventDefault(); const f = e.target;
-  DB.addons.push({ id: uid('a'), appliesTo: f.appliesTo.value, name: f.name.value.trim(), weight: n(f.weight.value), price: n(f.price.value), notes: f.notes.value.trim() });
-  const keep = f.appliesTo.value; f.reset(); f.appliesTo.value = keep; save(); renderLists();
-});
-$('#pForm').addEventListener('submit', e => {
-  e.preventDefault(); const f = e.target; const id = uid('p');
-  DB.people.push({ id, name: f.name.value.trim(), weight: n(f.weight.value), notes: f.notes.value.trim() });
-  DB.loads.travellers.push(id); f.reset(); save(); renderPeople();
-});
-
-/* ---------------- compare tab ---------------- */
-const SHORT = { gvm: 'GVM', gcm: 'GCM', btc: 'Tow capacity', atm: 'Van ATM', ball: 'Tow ball', gtm: 'Van GTM' };
+/* ---------------- COMPARE tab ---------------- */
 function renderCompare() {
   const slots = DB.compare.slice(0, 3);
   const R = slots.map(sl => {
@@ -791,56 +632,252 @@ function renderCompare() {
     return (v && c) ? { v, c, r: calc(v, c, DB.loads) } : null;
   });
   let best = -1, bestScore = -Infinity;
-  R.forEach((x, i) => {
-    if (!x || x.r.worst === 'red') return;
-    const sc = Math.min(...x.r.checks.filter(k => k.pct !== null).map(k => k.pct));
-    if (sc > bestScore) { bestScore = sc; best = i; }
-  });
+  R.forEach((x, i) => { if (!x || x.r.worst === 'red' || x.r.worst === 'na') return;
+    const sc = Math.min(...x.r.checks.filter(k => k.pct !== null).map(k => k.pct)); if (sc > bestScore) { bestScore = sc; best = i; } });
   const opt = (items, cur, ph) => `<option value="">${ph}</option>` + items.map(i => `<option value="${esc(i.id)}"${i.id === cur ? ' selected' : ''}>${esc(i.name)}</option>`).join('');
-  const cells = f => R.map((x, i) => x ? f(x, i) : `<td class="v s-na">–</td>`).join('');
-  const sign = m => m === null ? 'n/a' : (m < 0 ? '−' : '+') + fmt(Math.abs(m));
+  const cells = f => R.map(x => x ? f(x) : '<td class="v s-na">–</td>').join('');
   const row = (lbl, f) => `<tr><td class="lbl">${lbl}</td>${cells(f)}</tr>`;
   const sec = t => `<tr class="sec"><td colspan="4">${t}</td></tr>`;
-
   let h = `<table class="ctab"><colgroup><col class="lbl"><col><col><col></colgroup>
-    <tr><th class="lbl"></th>${slots.map((sl, i) => `<th class="opt${i === best ? ' best' : ''}">Option ${i + 1}${i === best ? ' ★' : ''}
+    <tr><th></th>${slots.map((sl, i) => `<th class="${i === best ? 'best' : ''}">Option ${i + 1}${i === best ? ' ★' : ''}
       <select data-slot="${i}" data-k="v">${opt(DB.vehicles, sl.v, 'Car…')}</select>
       <select data-slot="${i}" data-k="c">${opt(DB.caravans, sl.c, 'Caravan…')}</select>
-      <div class="nms">${R[i] ? esc(R[i].v.name) + '<br>+ ' + esc(R[i].c.name) : ''}</div></th>`).join('')}</tr>`;
-  h += `<tr><td class="lbl">Overall</td>${cells(({ r }) => `<td class="status s-${r.worst}">${{ green: 'GREEN', yellow: 'YELLOW', red: 'RED', na: 'N/A' }[r.worst]}</td>`)}</tr>`;
-  h += sec('Headroom (kg) — + spare / − over');
-  for (const k of ['gvm', 'gcm', 'btc', 'atm', 'ball', 'gtm']) {
-    h += row(SHORT[k], ({ r }) => { const c = r.checks.find(z => z.key === k); return `<td class="v s-${c.s}" title="${esc(c.t)}">${sign(c.margin)}</td>`; });
-  }
-  h += row('Ratings', ({ r }) => `<td class="v" style="font-weight:400;font-size:.85em;white-space:normal">GVM ${fmt(r.RT.gvm)}<br>GCM ${fmt(r.RT.gcm)}${r.RT.on ? ' ↑' : ''}</td>`);
-  h += sec('Weights (kg)');
-  h += row('Loaded car', ({ r }) => `<td class="v">${fmt(r.car)}</td>`);
-  h += row('Loaded van', ({ r }) => `<td class="v">${fmt(r.loadedVan)}</td>`);
-  h += row('Ball weight', ({ r }) => `<td class="v">${fmt(r.ball)}</td>`);
-  h += row('Combined', ({ r }) => `<td class="v">${fmt(r.combined)}</td>`);
-  h += row('Room in car', ({ r }) => `<td class="v ${r.carRoom < 0 ? 's-red' : ''}">${fmt(r.carRoom)}</td>`);
-  h += row('Room in van', ({ r }) => `<td class="v ${r.vanRoom < 0 ? 's-red' : ''}">${fmt(r.vanRoom)}</td>`);
-  h += sec('Van');
+      ${R[i] ? `<div class="cname">${esc(R[i].v.name)}<br>+ ${esc(R[i].c.name)}</div>` : ''}</th>`).join('')}</tr>`;
+  h += row('Result', ({ r }) => `<td class="status s-${r.worst}">${WORD[r.worst]}</td>`);
+  h += sec('Kg spare (+) or over (−)');
+  for (const k of ['gvm', 'gcm', 'btc', 'atm', 'ball']) h += row(SHORT[k], ({ r }) => { const c = r.checks.find(z => z.key === k); return `<td class="v s-${c.s}">${signed(c.margin)}</td>`; });
+  if (R.some(x => x && n(x.c.gtm) !== null)) h += row('Van GTM', ({ r }) => { const c = r.checks.find(z => z.key === 'gtm'); return `<td class="v s-${c.s}">${signed(c.margin)}</td>`; });
+  h += sec('Van incl. extras');
   h += row('Length', ({ c }) => `<td class="v">${c.lengthFt ?? '–'} ft</td>`);
-  h += row('Lithium', ({ c }) => `<td class="v">${fmt(c.batteryAh)} Ah</td>`);
-  h += row('Solar', ({ c }) => `<td class="v">${fmt(c.solarW)} W</td>`);
-  h += row('Water', ({ c }) => `<td class="v">${fmt(c.freshL)} L</td>`);
+  h += row('Lithium', ({ r }) => `<td class="v">${fmt0(r.VT.ah)} Ah</td>`);
+  h += row('Solar', ({ r }) => `<td class="v">${fmt0(r.VT.solar)} W</td>`);
+  h += row('Inverter', ({ r }) => `<td class="v">${fmt0(r.VT.inv)} W</td>`);
+  h += row('Water', ({ r }) => `<td class="v">${fmt0(r.VT.fresh)} L</td>`);
   h += sec('Cost');
-  h += row('Total', ({ v, c, r }) => `<td class="v">${money((n(v.price) || 0) + (n(c.price) || 0) + r.carAdd.cost + r.vanAdd.cost + r.RT.cost)}</td>`);
-  h += `<tr><td class="lbl"></td>${R.map((x, i) => `<td>${x ? `<button class="btn sm sec" style="width:100%" data-open="${i}">Details</button>` : ''}</td>`).join('')}</tr></table>`;
-  const unset = R.some(x => x && (x.r.people.unset + x.r.carAdd.unset + x.r.vanAdd.unset));
-  $('#cmpGrid').innerHTML = h + (unset ? '<p class="warn">⚠ Some selected people/add-ons have no weight (counted as 0 kg).</p>' : '');
+  h += row('Total', ({ r }) => `<td class="v">${money(r.cost)}</td>`);
+  h += `<tr><td></td>${R.map((x, i) => `<td>${x ? `<button class="btn sm sec" style="width:100%;padding:8px 4px" data-open="${i}">Open</button>` : ''}</td>`).join('')}</tr></table>`;
+  $('#cmpGrid').innerHTML = h;
 }
-$('#cmpGrid').addEventListener('change', e => {
-  const i = e.target.dataset.slot; if (i === undefined) return;
-  DB.compare[i][e.target.dataset.k] = e.target.value; save(); renderCompare();
-});
-$('#cmpGrid').addEventListener('click', e => {
-  const i = e.target.dataset.open; if (i === undefined) return;
-  DB.selection.vehicleId = DB.compare[i].v; DB.selection.caravanId = DB.compare[i].c; save(); showTab('combo');
+$('#cmpGrid').addEventListener('change', e => { const i = e.target.dataset.slot; if (i === undefined) return; DB.compare[i][e.target.dataset.k] = e.target.value; save(); renderCompare(); });
+$('#cmpGrid').addEventListener('click', e => { const i = e.target.dataset.open; if (i === undefined) return;
+  DB.selection.vehicleId = DB.compare[i].v; DB.selection.caravanId = DB.compare[i].c; save(); showTab('combo'); });
+
+/* ---------------- CARS / VANS forms ---------------- */
+const numV = ['kerb', 'gvm', 'gcm', 'btc', 'maxBall', 'frontAxle', 'rearAxle', 'fuelL', 'price', 'odometer', 'upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear', 'upCost'];
+const numC = ['lengthFt', 'tare', 'atm', 'gtm', 'tareBall', 'freshL', 'greyL', 'batteryAh', 'solarW', 'inverterW', 'price'];
+function readForm(form, nums) {
+  const o = { auto: [] };
+  [...form.elements].forEach(el => {
+    if (!el.name) return;
+    o[el.name] = el.type === 'checkbox' ? el.checked : nums.includes(el.name) ? n(el.value) : String(el.value).trim();
+    if (el.classList.contains('auto') && String(el.value).trim() !== '') o.auto.push(el.name);
+  });
+  return o;
+}
+function writeForm(form, obj) {
+  [...form.elements].forEach(el => {
+    if (!el.name) return;
+    if (el.type === 'checkbox') el.checked = !!obj[el.name]; else el.value = obj[el.name] ?? '';
+    el.classList.toggle('auto', (obj.auto || []).includes(el.name));
+  });
+  markAutoNote(form);
+}
+const markAutoNote = form => form.querySelector('.autoNote').classList.toggle('hidden', !form.querySelector('.auto'));
+// fill only blank fields; returns count
+function fillForm(form, fields) {
+  let c = 0;
+  for (const [k, v] of Object.entries(fields || {})) {
+    const el = form.elements[k];
+    if (!el || el.type === 'checkbox' || el.type === 'hidden' || v === null || v === undefined || v === '') continue;
+    if (String(el.value).trim() !== '') continue;
+    if (el.tagName === 'SELECT' && ![...el.options].some(o => o.value === String(v))) continue;
+    el.value = v; el.classList.add('auto'); c++;
+  }
+  if (form.elements.upOn && ['upGvm', 'upGcm', 'upBtc'].some(k => fields?.[k]) && !form.elements.upOn.checked) form.elements.upOn.checked = true;
+  markAutoNote(form);
+  return c;
+}
+const pickKnown = (o, kind) => Object.fromEntries(['name', ...KEYF[kind], 'price'].filter(k => o[k] !== null && o[k] !== undefined && o[k] !== '').map(k => [k, o[k]]));
+
+// extras editor (inside each car / van)
+function extrasEditor(box, list, side, ctx) {
+  box._items = JSON.parse(JSON.stringify(list || []));
+  box._items.forEach(a => { if (!Array.isArray(a.auto)) a.auto = []; });
+  const draw = () => {
+    box.innerHTML = box._items.map((a, i) => `<div class="xi" data-i="${i}">
+      <div class="xr1"><input type="checkbox" data-f="on"${a.on ? ' checked' : ''} aria-label="Included">
+        <input list="${side === 'car' ? 'carExtrasList' : 'vanExtrasList'}" data-f="name" value="${esc(a.name)}" placeholder="Item name">
+        <button type="button" class="ib" data-look="${i}" aria-label="Look up">🔍</button>
+        <button type="button" class="ib x" data-del="${i}" aria-label="Remove">×</button></div>
+      <div class="xr2">
+        <div><label>Weight kg</label><input type="number" inputmode="decimal" data-f="weight" value="${a.weight ?? ''}" class="${a.auto.includes('weight') ? 'auto' : ''}"></div>
+        <div><label>Capacity</label><input type="number" inputmode="decimal" data-f="cap" value="${a.cap ?? ''}" class="${a.auto.includes('cap') ? 'auto' : ''}"></div>
+        <div><label>Of</label><select data-f="capType" class="${a.auto.includes('capType') ? 'auto' : ''}">${Object.entries(CAPS).map(([k, t]) => `<option value="${k}"${a.capType === k ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+        <div><label>Price $</label><input type="number" inputmode="numeric" data-f="price" value="${a.price ?? ''}" class="${a.auto.includes('price') ? 'auto' : ''}"></div>
+      </div>${a.note ? `<div class="xnote">${a.note}</div>` : ''}</div>`).join('') +
+      `<button type="button" class="btn sm sec" data-add="1">+ Add extra</button>`;
+  };
+  const doLook = async (i, quiet) => {
+    const a = box._items[i]; if (!a || !a.name.trim()) return;
+    if (!LOOK.url) { if (!quiet) toast('Set up Web lookup on the Setup tab first'); return; }
+    const btn = box.querySelector(`[data-look="${i}"]`); btn?.classList.add('busy');
+    try {
+      const r = await lookup({ kind: 'extra', side, name: a.name.trim(), context: ctx() });
+      const set = (k, v) => { if (v === null || v === undefined || v === '') return; if (a[k] === null || a[k] === undefined || a[k] === '') { a[k] = v; a.auto.push(k); } };
+      set('weight', r.weight); set('price', r.price);
+      if (r.capType && !a.capType) { a.capType = r.capType; a.auto.push('capType'); }
+      if (a.capType === r.capType) set('cap', r.cap);
+      a.note = srcHTML(r);
+      if (r.weight === null && !quiet) toast(`No weight found for "${a.name}" – enter it yourself`);
+    } catch (e) { if (!quiet) toast('Lookup failed: ' + e.message); }
+    btn?.classList.remove('busy'); draw();
+  };
+  box.oninput = e => {
+    const row = e.target.closest('.xi'); if (!row) return; const a = box._items[row.dataset.i], f = e.target.dataset.f;
+    a[f] = f === 'on' ? e.target.checked : ['weight', 'price', 'cap'].includes(f) ? n(e.target.value) : e.target.value;
+    a.auto = a.auto.filter(k => k !== f); e.target.classList.remove('auto');
+  };
+  box.onchange = e => {  // auto look-up when a new name is entered and weight is blank
+    if (e.target.dataset.f !== 'name') return;
+    const i = +e.target.closest('.xi').dataset.i, a = box._items[i];
+    if (a.name.trim() && n(a.weight) === null) doLook(i, true);
+  };
+  box.onclick = e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.add) { box._items.push({ id: uid('x'), name: '', weight: null, price: null, cap: null, capType: '', on: true, auto: [] }); draw();
+      const ins = box.querySelectorAll('input[data-f=name]'); ins[ins.length - 1].focus(); }
+    if (t.dataset.del !== undefined) { box._items.splice(+t.dataset.del, 1); draw(); }
+    if (t.dataset.look !== undefined) doLook(+t.dataset.look, false);
+  };
+  draw();
+}
+
+const FORMS = {};
+function setupCrud(kind) {
+  const isV = kind === 'v', form = $(isV ? '#vForm' : '#cForm'), listKey = isV ? 'vehicles' : 'caravans';
+  const nums = isV ? numV : numC, title = $(isV ? '#vFormTitle' : '#cFormTitle'), noun = isV ? 'car' : 'caravan';
+  const box = $(isV ? '#vAddons' : '#cAddons'), src = $(isV ? '#vSrc' : '#cSrc'), side = isV ? 'car' : 'van';
+  const ctx = () => form.elements.name.value.trim();
+  const reset = () => { form.reset(); form.elements.id.value = ''; title.textContent = 'Add ' + noun; src.innerHTML = '';
+    [...form.elements].forEach(el => el.classList.remove('auto')); markAutoNote(form); extrasEditor(box, [], side, ctx); };
+  const edit = item => { writeForm(form, item); extrasEditor(box, item.addons, side, ctx); src.innerHTML = item.lookNote || ''; title.textContent = 'Edit ' + noun; window.scrollTo(0, 0); };
+  FORMS[kind] = { form, reset, src, kindName: isV ? 'vehicle' : 'caravan' };
+  $(isV ? '#vReset' : '#cReset').addEventListener('click', reset);
+  form.addEventListener('input', e => { if (e.target.name) { e.target.classList.remove('auto'); markAutoNote(form); } });
+
+  // Fill blanks button (form)
+  form.querySelector('[data-fill]').addEventListener('click', async e => {
+    const btn = e.target, o = readForm(form, nums);
+    if (!o.name && !o.link) { toast('Enter a name or listing link first'); return; }
+    const want = [...KEYF[kind], ...(o.link ? ['price', ...(isV ? ['odometer', 'upGvm', 'upGcm', 'upBtc', 'upBall', 'upType', 'upDetails'] : [])] : [])].filter(k => o[k] === null || o[k] === '');
+    if (!want.length) { toast('Nothing blank to fill'); return; }
+    btn.disabled = true; btn.textContent = 'Looking up…';
+    try {
+      const r = await lookup({ kind: FORMS[kind].kindName, name: o.name, url: o.link || undefined, known: pickKnown(o, kind), want });
+      const c = fillForm(form, r.fields); src.innerHTML = srcHTML(r);
+      toast(c ? `Filled ${c} value(s) – yellow edge, please check` : 'No more figures found');
+    } catch (err) { toast('Lookup failed: ' + err.message); }
+    btn.disabled = false; btn.textContent = 'Fill blanks';
+  });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const o = readForm(form, nums);
+    o.addons = box._items.filter(a => a.name.trim()).map(a => Object.assign(a, { name: a.name.trim() }));
+    o.lookNote = src.innerHTML;
+    const list = DB[listKey];
+    if (o.id) { const i = list.findIndex(x => x.id === o.id); list[i] = Object.assign(list[i], o); } else { o.id = uid(kind); list.push(o); }
+    save(); reset(); renderLists();
+    toast(`${o.name} saved`, 2500);
+    autoFill(kind, o.id);
+  });
+  $(isV ? '#vList' : '#cList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]'); if (!b) return;
+    const list = DB[listKey], item = list.find(x => x.id === b.dataset.id); if (!item) return;
+    if (b.dataset.act === 'edit') edit(item);
+    if (b.dataset.act === 'copy') { const cp = JSON.parse(JSON.stringify(item)); cp.id = uid(kind); cp.name = item.name + ' (copy)'; cp.addons.forEach(a => a.id = uid('x')); list.push(cp); save(); renderLists(); edit(cp); }
+    if (b.dataset.act === 'del' && confirm(`Delete "${item.name}"?`)) { DB[listKey] = list.filter(x => x !== item); save(); renderLists(); }
+    if (b.dataset.act === 'use') { DB.selection[isV ? 'vehicleId' : 'caravanId'] = item.id; save(); showTab('combo'); }
+  });
+}
+
+// after saving: look up any blank key figures in the background
+async function autoFill(kind, id) {
+  if (!LOOK.url) return;
+  const listKey = kind === 'v' ? 'vehicles' : 'caravans', it = DB[listKey].find(x => x.id === id); if (!it) return;
+  const want = KEYF[kind].filter(k => n(it[k]) === null); if (!want.length) return;
+  toast(`Looking up ${want.length} blank figure(s) for ${it.name}…`, 30000);
+  try {
+    const r = await lookup({ kind: kind === 'v' ? 'vehicle' : 'caravan', name: it.name, url: it.link || undefined, known: pickKnown(it, kind), want });
+    const cur = DB[listKey].find(x => x.id === id); if (!cur) return;
+    let c = 0;
+    for (const k of want) { const v = n(r.fields?.[k]); if (v !== null && n(cur[k]) === null) { cur[k] = v; cur.auto = [...new Set([...(cur.auto || []), k])]; c++; } }
+    if (c) cur.lookNote = srcHTML(r);
+    save(); renderLists(); renderCombo();
+    toast(c ? `Filled ${c} figure(s) for ${cur.name} – check them (yellow edge when editing)` : `No more figures found for ${cur.name}`);
+  } catch (e) { toast('Lookup failed: ' + e.message); }
+}
+
+// Add from listing popup
+let listingKind = 'v';
+document.querySelectorAll('[data-listing]').forEach(b => b.addEventListener('click', () => {
+  listingKind = b.dataset.listing; $('#lm_url').value = ''; $('#lm_state').textContent = 'Reads the ad, then searches the web for anything it leaves out. Takes 10–30 seconds.';
+  $('#lmodal').classList.remove('hidden'); setTimeout(() => $('#lm_url').focus(), 50);
+}));
+$('#lm_cancel').addEventListener('click', () => $('#lmodal').classList.add('hidden'));
+$('#lm_go').addEventListener('click', async () => {
+  const url = $('#lm_url').value.trim();
+  if (!/^https?:\/\//.test(url)) { $('#lm_state').textContent = 'Paste a full link starting with https://'; return; }
+  const F = FORMS[listingKind], btn = $('#lm_go');
+  if (!LOOK.url) { $('#lm_state').textContent = 'Set up Web lookup on the Setup tab first.'; return; }
+  btn.disabled = true; btn.textContent = 'Reading…'; $('#lm_state').textContent = 'Reading the listing and searching for missing figures…';
+  try {
+    const r = await lookup({ kind: F.kindName, url, known: pickKnown(readForm(F.form, listingKind === 'v' ? numV : numC), listingKind) });
+    if (!F.form.elements.link.value) F.form.elements.link.value = url;
+    const c = fillForm(F.form, r.fields); F.src.innerHTML = srcHTML(r);
+    $('#lmodal').classList.add('hidden');
+    toast(c ? `Filled ${c} field(s) – check the yellow ones, then Save` : 'Nothing found in that listing');
+  } catch (e) { $('#lm_state').textContent = 'Failed: ' + e.message; }
+  btn.disabled = false; btn.textContent = 'Look up';
 });
 
-/* ---------------- settings ---------------- */
+const btns = id => `<div class="actions" style="margin-top:4px"><button class="btn sm" data-act="use" data-id="${esc(id)}">Check</button>
+  <button class="btn sm sec" data-act="edit" data-id="${esc(id)}">Edit</button><button class="btn sm sec" data-act="copy" data-id="${esc(id)}">Copy</button>
+  <button class="btn sm danger" data-act="del" data-id="${esc(id)}">Delete</button></div>`;
+const fact = (lbl, val, cls) => `<div><span>${lbl}</span><b${cls ? ` class="${cls}"` : ''}>${val}</b></div>`;
+const linkHTML = o => o.link ? ` <a href="${esc(o.link)}" target="_blank" rel="noopener" style="font-size:15px;font-weight:600">ad ↗</a>` : '';
+const autoTag = o => o.auto?.length ? `<div class="warn">${o.auto.length} looked-up figure(s) – check</div>` : '';
+
+function renderLists() {
+  $('#vList').innerHTML = DB.vehicles.map(v => {
+    const R = ratings(v), x = extras(v.addons), up = (k, b) => R.on && R[k] !== n(v[b]) ? 'up' : '';
+    const pay = R.gvm !== null && n(v.kerb) !== null ? R.gvm - n(v.kerb) - x.kg - x.cap.water - x.cap.fuel * 0.84 : null;
+    return `<div class="item"><div class="nm">${esc(v.name)}${linkHTML(v)}</div>
+      <div class="facts">${fact('GVM', fmt(R.gvm), up('gvm', 'gvm'))}${fact('GCM', fmt(R.gcm), up('gcm', 'gcm'))}${fact('Towing', fmt(R.btc), up('btc', 'btc'))}
+        ${fact('Payload left', fmt(pay))}${fact('Price', money(v.price))}${fact('Km', fmt(v.odometer))}</div>
+      ${R.on && hasUpgrade(v) ? `<div class="muted up">Upgrade: ${esc(upSummary(v))}</div>` : ''}
+      ${x.kg ? `<div class="muted">Extras: ${fmt(x.kg)} kg</div>` : ''}${autoTag(v)}${btns(v.id)}</div>`;
+  }).join('') || '<p class="muted">No cars yet.</p>';
+  $('#cList').innerHTML = DB.caravans.map(c => {
+    const T = vanTotals(c), x = T.x, plus = k => x.cap[k] ? 'up' : '';
+    const pay = n(c.atm) !== null && n(c.tare) !== null ? n(c.atm) - n(c.tare) - x.kg : null;
+    return `<div class="item"><div class="nm">${esc(c.name)}${linkHTML(c)}</div>
+      <div class="facts">${fact('Tare', fmt(c.tare))}${fact('ATM', fmt(c.atm))}${fact('Payload', fmt(pay))}
+        ${fact('Lithium', fmt0(T.ah) + ' Ah', plus('battery'))}${fact('Solar', fmt0(T.solar) + ' W', plus('solar'))}${fact('Water', fmt0(T.fresh) + ' L', plus('water'))}
+        ${fact('Length', (c.lengthFt ?? '–') + ' ft')}${fact('Inverter', fmt0(T.inv) + ' W', plus('inverter'))}${fact('Price', money(c.price))}</div>
+      ${x.kg ? `<div class="muted">Extras: ${fmt(x.kg)} kg (green = includes extras)</div>` : ''}${autoTag(c)}${btns(c.id)}</div>`;
+  }).join('') || '<p class="muted">No caravans yet.</p>';
+}
+
+/* ---------------- setup ---------------- */
+$('#lk_url').value = LOOK.url || ''; $('#lk_key').value = LOOK.key || '';
+const saveLook = () => { LOOK = { url: $('#lk_url').value.trim().replace(/\/+$/, ''), key: $('#lk_key').value }; localStorage.setItem(LK_KEY, JSON.stringify(LOOK)); };
+$('#lk_url').addEventListener('change', saveLook); $('#lk_key').addEventListener('change', saveLook);
+$('#lk_test').addEventListener('click', async () => {
+  saveLook(); $('#lk_state').textContent = 'Testing…';
+  try { const r = await lookup({ kind: 'ping' }); $('#lk_state').textContent = `✓ Connected (${r.model}). Kept on this device only – not in backups.`; }
+  catch (e) { $('#lk_state').textContent = '✗ ' + e.message; }
+});
 $('#set_yellowPct').addEventListener('input', e => { DB.settings.yellowPct = n(e.target.value); save(); });
 $('#btnExport').addEventListener('click', () => {
   const a = document.createElement('a');
@@ -851,7 +888,7 @@ $('#fileImport').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
   try {
     const d = JSON.parse(await f.text());
-    if (!Array.isArray(d.vehicles) || !Array.isArray(d.caravans)) throw new Error('File must contain vehicles and caravans arrays');
+    if (!Array.isArray(d.vehicles) || !Array.isArray(d.caravans)) throw new Error('Not a Rig Weights file');
     if (!confirm('Replace all current data with this file?')) return;
     DB = defaults(d); save(); renderAll();
   } catch (err) { alert('Import failed: ' + err.message); }
@@ -860,10 +897,9 @@ $('#fileImport').addEventListener('change', async e => {
 
 function renderAll() {
   $('#set_yellowPct').value = DB.settings.yellowPct ?? 5;
-  $('#vForm')._reset(); $('#cForm')._reset();
+  FORMS.v.reset(); FORMS.c.reset();
   renderLists(); renderCombo();
 }
-
 setupCrud('v'); setupCrud('c');
 load();
 if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
