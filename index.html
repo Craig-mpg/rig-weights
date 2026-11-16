@@ -234,8 +234,18 @@
         <div><label>Rear axle</label><input name="rearAxle" type="number" inputmode="numeric"></div>
       </div>
       <div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:14px">
-        <label class="toggle"><input type="checkbox" name="upOn">Mass upgrade fitted</label>
-        <div class="grid" style="margin-top:10px">
+        <h3 style="margin:0 0 8px">GVM / GCM upgrade</h3>
+        <div class="grid">
+          <div class="full"><label>Upgrade</label><select name="upStatus">
+            <option value="">None</option><option value="fitted">Fitted to this car</option><option value="planned">Planned – I'm considering it</option></select></div>
+        </div>
+        <div id="upBox" class="hidden">
+        <div class="grid" style="margin-top:12px">
+          <div class="full"><label>Kit (brand / model)</label><input name="upKit" list="upKits" placeholder="e.g. Lovells 3850 GVM"></div>
+        </div>
+        <div class="actions" style="margin-top:10px"><button class="btn sm" type="button" id="upLook">Look up this upgrade's figures</button></div>
+        <h3>Upgraded ratings kg</h3>
+        <div class="grid">
           <div><label>GVM</label><input name="upGvm" type="number" inputmode="numeric"></div>
           <div><label>GCM</label><input name="upGcm" type="number" inputmode="numeric"></div>
           <div><label>Braked towing</label><input name="upBtc" type="number" inputmode="numeric"></div>
@@ -245,9 +255,10 @@
           <div><label>Type</label><select name="upType"><option value="">–</option><option value="pre">Pre-rego</option><option value="post">Post-rego</option></select></div>
           <div><label>State</label><input name="upState" placeholder="QLD"></div>
           <div><label>Cost $</label><input name="upCost" type="number" inputmode="numeric"></div>
-          <div class="full"><label>Kit / plate</label><input name="upDetails"></div>
+          <div class="full"><label>Plate / notes</label><input name="upDetails"></div>
         </div>
         <p class="muted" style="margin:8px 0 0">Blank = factory figure. A post-rego GVM-only upgrade keeps the factory GCM.</p>
+        </div>
       </div>
       <h3>Extras fitted</h3>
       <p class="muted" style="margin:-4px 0 8px">Type a name and the weight is looked up – you can change any figure it suggests. Water and fuel tanks are counted full.</p>
@@ -347,6 +358,10 @@
 </div>
 <div id="toast" class="hidden"></div>
 
+<datalist id="upKits">
+  <option>Lovells 3850 GVM</option><option>Lovells 4000 GVM + GCM</option><option>Pedders 3850 GVM</option><option>ARB / Old Man Emu GVM upgrade</option>
+  <option>Ironman 4x4 GVM upgrade</option><option>Tough Dog GVM upgrade</option><option>Superior Engineering GVM upgrade</option><option>TJM GVM upgrade</option>
+</datalist>
 <datalist id="carExtrasList">
   <option>Bull bar</option><option>Winch</option><option>Dual battery system</option><option>Roof rack</option>
   <option>Rear drawer system</option><option>Fridge + slide</option><option>Long range fuel tank</option><option>Water tank</option>
@@ -400,6 +415,7 @@ function defaults(d) {
       : a).filter(Boolean);
     o.addons.forEach(a => { if (a.capType === undefined) a.capType = ''; if (a.cap === undefined) a.cap = null; });
     if (!Array.isArray(o.auto)) o.auto = [];
+    if (o.upStatus === undefined && ['upGvm', 'upGcm', 'upBtc', 'upBall'].some(k => n(o[k]) !== null)) o.upStatus = 'fitted';
   };
   d.vehicles.forEach(fix); d.caravans.forEach(fix);
   delete d.addons;
@@ -465,12 +481,13 @@ function showTab(t) {
 
 /* ---------------- calculation ---------------- */
 function ratings(v, forceUp) {
-  const on = forceUp === undefined ? !!v.upOn : forceUp;
+  const on = forceUp === undefined ? !!v.upOn && hasUpgrade(v) : forceUp;
   const pick = (up, base) => on && n(v[up]) !== null ? n(v[up]) : n(v[base]);
   return { on, gvm: pick('upGvm', 'gvm'), gcm: pick('upGcm', 'gcm'), btc: pick('upBtc', 'btc'), maxBall: pick('upBall', 'maxBall'),
     front: pick('upFront', 'frontAxle'), rear: pick('upRear', 'rearAxle'), cost: on ? (n(v.upCost) || 0) : 0 };
 }
-const hasUpgrade = v => ['upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear'].some(k => n(v[k]) !== null);
+const hasUpgrade = v => !!v.upStatus && ['upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear'].some(k => n(v[k]) !== null);
+const upName = v => (v.upKit || 'Upgrade') + (v.upStatus === 'planned' ? ' (planned)' : '');
 function upSummary(v) {
   const f = (lbl, a, b) => n(v[b]) !== null && n(v[b]) !== n(v[a]) ? `${lbl} ${fmt(v[a])} → ${fmt(v[b])}` : '';
   return [f('GVM', 'gvm', 'upGvm'), f('GCM', 'gcm', 'upGcm'), f('Towing', 'btc', 'upBtc'), f('Ball', 'maxBall', 'upBall')].filter(Boolean).join(' · ');
@@ -553,7 +570,7 @@ function renderCombo() {
     `<label class="chip${a.on ? ' on' : ''}"><input type="checkbox" data-${kind}="${esc(a.id)}"${a.on ? ' checked' : ''}>${a.material ? esc(a.material) + ' ' : ''}${esc(a.name)}<span class="w">${n(a.weight) === null ? '? kg' : fmt(a.weight) + ' kg'}${capTxt(a)}</span></label>`).join('')}</div>`
     : `<p class="muted" style="margin:0">None yet – add them on the ${kind === 'cx' ? 'Cars' : 'Vans'} tab.</p>`;
   $('#carExtras').innerHTML = !v ? '' :
-    (hasUpgrade(v) ? `<label class="toggle" style="margin-bottom:6px"><input type="checkbox" id="upToggle"${v.upOn ? ' checked' : ''}>Mass upgrade on</label>
+    (hasUpgrade(v) ? `<label class="toggle" style="margin-bottom:6px"><input type="checkbox" id="upToggle"${v.upOn ? ' checked' : ''}>Use ${esc(upName(v))}</label>
       <p class="muted" style="margin:0 0 12px">${esc(upSummary(v))}</p>` : '') + chips(v.addons, 'cx');
   $('#vanExtras').innerHTML = !c ? '' : chips(c.addons, 'vx');
 
@@ -568,11 +585,25 @@ function resultHTML(v, c, r) {
       <div class="big">${x.margin < 0 ? 'Over ' + fmt(-x.margin) : fmt(x.margin) + ' spare'}</div>
       <div class="sub">${fmt(x.a)} of ${fmt(x.l)} kg</div><div class="bar"><div style="width:${Math.min(100, x.a / x.l * 100)}%"></div></div></div>`).join('');
   const unset = r.carX.unset + r.vanX.unset;
-  let upRow = '';
-  if (hasUpgrade(v)) {
+  let upCard = '';
+  if (hasUpgrade(v)) {   // stock vs upgraded, side by side
     const st = calc(v, c, DB.loads, false), up = calc(v, c, DB.loads, true);
-    const cell = x => `<span class="pill s-${x.worst}">${WORD[x.worst]}</span> ${x.tight ? (x.tight.margin < 0 ? 'over ' + fmt(-x.tight.margin) : fmt(x.tight.margin) + ' spare') : ''}`;
-    upRow = `<div class="kv" style="margin-top:12px"><div>Without upgrade</div><div>${cell(st)}</div><div>With upgrade</div><div>${cell(up)}</div></div>`;
+    const row = (lbl, f) => `<tr><td class="lbl">${lbl}</td>${f(st)}${f(up)}</tr>`;
+    const chk = k => x => { const z = x.checks.find(q => q.key === k); return `<td class="v s-${z.s}">${signed(z.margin)}</td>`; };
+    const lim = (k, b) => `<tr><td class="lbl">${{GVM:'GVM',GCM:'GCM',BTC:'Towing'}[k]}</td><td class="v">${fmt(n(v[b]))}</td><td class="v${up.RT[k.toLowerCase()] !== n(v[b]) ? ' up' : ''}">${fmt(up.RT[k.toLowerCase()])}</td></tr>`;
+    upCard = `<div class="card"><h2>Stock vs ${esc(upName(v))}</h2>
+    <table class="ctab"><colgroup><col style="width:30%"><col><col></colgroup>
+      <tr><th></th><th class="${!v.upOn ? 'best' : ''}">Stock</th><th class="${v.upOn ? 'best' : ''}">Upgraded</th></tr>
+      ${row('Result', x => `<td class="status s-${x.worst}">${WORD[x.worst]}</td>`)}
+      <tr class="sec"><td colspan="3">Kg spare (+) or over (−)</td></tr>
+      ${row('GVM', chk('gvm'))}${row('GCM', chk('gcm'))}${row('Towing', chk('btc'))}${row('Tow ball', chk('ball'))}
+      ${row('Car room', x => `<td class="v">${fmt(x.carRoom)}</td>`)}
+      <tr class="sec"><td colspan="3">Ratings kg</td></tr>
+      ${lim('GVM', 'gvm')}${lim('GCM', 'gcm')}${lim('BTC', 'btc')}
+      <tr class="sec"><td colspan="3">Cost</td></tr>
+      ${row('Total', x => `<td class="v">${money(x.cost)}</td>`)}
+    </table>
+    <p class="muted" style="margin:8px 0 0">Outlined column = what the results above use. Switch with "Use ${esc(upName(v))}" under Car extras.</p></div>`;
   }
   const autoN = (v.auto?.length || 0) + (c.auto?.length || 0);
   return `
@@ -581,7 +612,8 @@ function resultHTML(v, c, r) {
       r.tight ? `Tightest: ${r.tight.t} – ${fmt(r.tight.margin)} kg spare` : ''}</span></div>
   ${unset ? `<p class="warn" style="margin:-4px 0 10px">${unset} extra(s) have no weight – counted as 0 kg</p>` : ''}
   ${autoN ? `<p class="warn" style="margin:-4px 0 10px">Uses ${autoN} looked-up figure(s) – check them on the compliance plates</p>` : ''}
-  <div class="card"><div class="tiles">${tiles}</div>${upRow}</div>
+  ${upCard}
+  <div class="card"><div class="tiles">${tiles}</div></div>
   <div class="card"><div class="kv">
     <div>Loaded car</div><div>${fmt(r.car)} kg</div>
     <div>Loaded van</div><div>${fmt(r.loadedVan)} kg</div>
@@ -671,6 +703,7 @@ $('#cmpGrid').addEventListener('click', e => { const i = e.target.dataset.open; 
 
 /* ---------------- CARS / VANS forms ---------------- */
 const numV = ['kerb', 'gvm', 'gcm', 'btc', 'maxBall', 'frontAxle', 'rearAxle', 'fuelL', 'price', 'odometer', 'upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear', 'upCost'];
+const UPF = ['upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear', 'upCost', 'upType'];
 const numC = ['lengthFt', 'tare', 'atm', 'gtm', 'tareBall', 'freshL', 'greyL', 'batteryAh', 'solarW', 'inverterW', 'price'];
 function readForm(form, nums) {
   const o = { auto: [] };
@@ -687,8 +720,9 @@ function writeForm(form, obj) {
     if (el.type === 'checkbox') el.checked = !!obj[el.name]; else el.value = obj[el.name] ?? '';
     el.classList.toggle('auto', (obj.auto || []).includes(el.name));
   });
-  markAutoNote(form);
+  markAutoNote(form); showUp(form);
 }
+const showUp = form => { const b = form.querySelector('#upBox'); if (b) b.classList.toggle('hidden', !form.elements.upStatus.value); };
 const markAutoNote = form => form.querySelector('.autoNote').classList.toggle('hidden', !form.querySelector('.auto'));
 // fill only blank fields; returns count
 function fillForm(form, fields) {
@@ -700,7 +734,7 @@ function fillForm(form, fields) {
     if (el.tagName === 'SELECT' && ![...el.options].some(o => o.value === String(v))) continue;
     el.value = v; el.classList.add('auto'); c++;
   }
-  if (form.elements.upOn && ['upGvm', 'upGcm', 'upBtc'].some(k => fields?.[k]) && !form.elements.upOn.checked) form.elements.upOn.checked = true;
+  if (form.elements.upStatus && ['upGvm', 'upGcm', 'upBtc'].some(k => fields?.[k]) && !form.elements.upStatus.value) { form.elements.upStatus.value = 'fitted'; form.elements.upStatus.classList.add('auto'); showUp(form); }
   markAutoNote(form);
   return c;
 }
@@ -788,6 +822,24 @@ function setupCrud(kind) {
   FORMS[kind] = { form, reset, src, kindName: isV ? 'vehicle' : 'caravan' };
   $(isV ? '#vReset' : '#cReset').addEventListener('click', reset);
   form.addEventListener('input', e => { if (e.target.name) { e.target.classList.remove('auto'); markAutoNote(form); } });
+  if (isV) {
+    form.elements.upStatus.addEventListener('change', () => showUp(form));
+    $('#upLook').addEventListener('click', async e => { const c = await lookUpgrade(e.target); if (c !== null) toast(c ? `Filled ${c} upgrade figure(s) – yellow edge, please check` : 'No figures found for that kit – enter them from the plate or quote', 8000); });
+  }
+  // look up the upgrade kit's ratings for this car; returns number filled (null = not run)
+  async function lookUpgrade(btn) {
+    const o = readForm(form, nums);
+    if (!o.upStatus || !o.upKit) { if (btn) toast('Pick Fitted or Planned and enter the kit first'); return null; }
+    if (!LOOK.url) { toast('Set up Web lookup on the Setup tab first'); return null; }
+    const want = UPF.filter(k => o[k] === null || o[k] === '');
+    if (!want.length) return 0;
+    if (btn) { btn.disabled = true; btn.textContent = 'Looking up…'; }
+    try {
+      const r = await lookup({ kind: 'upgrade', name: o.name, kit: o.upKit, want, known: pickKnown(o, kind) });
+      const c = fillForm(form, r.fields); src.innerHTML = srcHTML(r); return c;
+    } catch (err) { toast('Upgrade lookup failed: ' + err.message); return 0; }
+    finally { if (btn) { btn.disabled = false; btn.textContent = "Look up this upgrade's figures"; } }
+  }
 
   // Fill all blanks: the car/van's own figures, then every extra with no weight
   document.querySelectorAll(`[data-fill="${kind}"]`).forEach(fb => fb.addEventListener('click', async () => {
@@ -796,7 +848,7 @@ function setupCrud(kind) {
     if (!o.name && !o.link) { toast('Enter a name or listing link first'); return; }
     btns.forEach(b => { b.disabled = true; b.textContent = 'Looking up…'; });
     const msg = [];
-    const want = [...KEYF[kind], ...(o.link ? ['price', ...(isV ? ['odometer', 'upGvm', 'upGcm', 'upBtc', 'upBall', 'upType', 'upDetails'] : [])] : [])].filter(k => o[k] === null || o[k] === '');
+    const want = [...KEYF[kind], ...(o.link ? ['price', ...(isV ? ['odometer'] : [])] : [])].filter(k => o[k] === null || o[k] === '');
     if (want.length) {
       toast(`Looking up ${want.length} blank figure(s)…`, 60000);
       try {
@@ -804,6 +856,11 @@ function setupCrud(kind) {
         const c = fillForm(form, r.fields); src.innerHTML = srcHTML(r);
         msg.push(c ? `${c} ${noun} figure(s) filled` : `no more ${noun} figures found`);
       } catch (err) { msg.push(`${noun} lookup failed: ${err.message}`); }
+    }
+    if (isV && o.upStatus && o.upKit && UPF.some(k => o[k] === null || o[k] === '')) {
+      toast('Looking up the upgrade figures…', 60000);
+      const c = await lookUpgrade(null);
+      if (c !== null) msg.push(c ? `${c} upgrade figure(s) filled` : 'no upgrade figures found');
     }
     const todo = box._items.filter(a => a.name.trim() && n(a.weight) === null).length;
     if (todo) {
@@ -822,6 +879,7 @@ function setupCrud(kind) {
     o.addons = box._items.filter(a => a.name.trim()).map(a => { delete a.askMat; delete a._busy; return Object.assign(a, { name: a.name.trim() }); });
     o.lookNote = src.innerHTML;
     const list = DB[listKey];
+    if (isV) { const prev = list.find(x => x.id === o.id); if (!o.upStatus) o.upOn = false; else if (!prev || prev.upStatus !== o.upStatus) o.upOn = o.upStatus === 'fitted'; }
     if (o.id) { const i = list.findIndex(x => x.id === o.id); list[i] = Object.assign(list[i], o); } else { o.id = uid(kind); list.push(o); }
     save(); reset(); renderLists();
     toast(`${o.name} saved`, 2500);
@@ -891,7 +949,7 @@ function renderLists() {
     return `<div class="item"><div class="nm">${esc(v.name)}${linkHTML(v)}</div>
       <div class="facts">${fact('GVM', fmt(R.gvm), up('gvm', 'gvm'))}${fact('GCM', fmt(R.gcm), up('gcm', 'gcm'))}${fact('Towing', fmt(R.btc), up('btc', 'btc'))}
         ${fact('Payload left', fmt(pay))}${fact('Price', money(v.price))}${fact('Km', fmt(v.odometer))}</div>
-      ${R.on && hasUpgrade(v) ? `<div class="muted up">Upgrade: ${esc(upSummary(v))}</div>` : ''}
+      ${hasUpgrade(v) ? `<div class="muted ${R.on ? 'up' : ''}">${esc(upName(v))}: ${esc(upSummary(v))}${R.on ? '' : ' – not in use'}</div>` : v.upStatus ? `<div class="warn">${esc(upName(v))} – no figures yet</div>` : ''}
       ${x.kg ? `<div class="muted">Extras: ${fmt(x.kg)} kg</div>` : ''}${autoTag(v)}${btns(v.id)}</div>`;
   }).join('') || '<p class="muted">No cars yet.</p>';
   $('#cList').innerHTML = DB.caravans.map(c => {
