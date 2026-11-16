@@ -31,6 +31,18 @@
   nav button{background:transparent;border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:999px;cursor:pointer;font:inherit;font-size:16px;font-weight:600}
   nav button.active{background:var(--brand);border-color:var(--brand);color:#06121f}
   #saveState{margin-left:auto;font-size:14px;color:var(--muted)}
+  #aiBtn{padding:7px 12px;min-height:38px;font-size:15px}
+  .modal .card{max-height:calc(100vh - 90px);overflow:auto}
+  .mhead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .mhead h2{margin:0;flex:1}
+  .mx-close{background:transparent;border:1px solid var(--line);color:var(--ink);width:44px;height:44px;border-radius:10px;font-size:22px;cursor:pointer}
+  .ai p{margin:0 0 10px} .ai ul{margin:0 0 10px;padding-left:22px} .ai li{margin-bottom:4px} .ai h3{margin:14px 0 6px}
+  .bd{width:100%;border-collapse:collapse;font-size:16px}
+  .bd td{padding:6px 4px;border-bottom:1px solid var(--line)}
+  .bd td.n{text-align:right;font-weight:700;white-space:nowrap}
+  .bd tr.tot td{font-weight:800;border-bottom:0;padding-top:8px}
+  .bd tr.lim td{border-bottom:0;padding-top:2px}
+  .bd .sub{color:var(--muted);font-size:14px}
   main{max-width:1150px;margin:0 auto;padding:12px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
   h2{font-size:19px;margin:0 0 10px;font-weight:800}
@@ -162,6 +174,7 @@
     <button data-tab="settings">Setup</button>
   </nav>
   <span id="saveState">Loading…</span>
+  <button id="aiBtn" class="btn sm" type="button">✨ AI summary</button>
 </header>
 
 <main>
@@ -347,6 +360,10 @@
 </section>
 </main>
 
+<div class="modal hidden" id="imodal">
+  <div class="card"><div class="mhead"><h2 id="im_title"></h2><button class="mx-close" type="button" id="im_close" aria-label="Close">×</button></div>
+  <div id="im_body"></div></div>
+</div>
 <div class="modal hidden" id="lmodal">
   <div class="card">
     <h2>Add from listing</h2>
@@ -540,7 +557,7 @@ function calc(v, c, L, forceUp) {
   const carRoom = Math.min(RT.gvm !== null ? RT.gvm - car : Infinity, RT.gcm !== null ? RT.gcm - combined : Infinity);
   const vanRoom = Math.min(n(c.atm) !== null ? n(c.atm) - loadedVan : Infinity, RT.btc !== null ? RT.btc - loadedVan : Infinity);
   const cost = (n(v.price) || 0) + (n(c.price) || 0) + carX.cost + vanX.cost + RT.cost;
-  return { RT, carX, vanX, VT, miss, water, loadedVan, ball, vanAxle, car, combined, checks, worst, tight, cost,
+  return { RT, carX, vanX, VT, miss, water, grey, carFluids, vanFuel: vanX.cap.fuel * 0.84, loadedVan, ball, vanAxle, car, combined, checks, worst, tight, cost,
     carRoom: isFinite(carRoom) ? carRoom : null, vanRoom: isFinite(vanRoom) ? vanRoom : null };
 }
 const signed = m => m === null ? 'n/a' : (m < 0 ? '−' : '+') + fmt(Math.abs(m));
@@ -613,7 +630,8 @@ function resultHTML(v, c, r) {
   ${unset ? `<p class="warn" style="margin:-4px 0 10px">${unset} extra(s) have no weight – counted as 0 kg</p>` : ''}
   ${autoN ? `<p class="warn" style="margin:-4px 0 10px">Uses ${autoN} looked-up figure(s) – check them on the compliance plates</p>` : ''}
   ${upCard}
-  <div class="card"><div class="tiles">${tiles}</div></div>
+  <div class="card"><div class="tiles">${tiles}</div>
+    <div class="actions"><button class="btn sec" type="button" data-kw="check">Key weights – how each total adds up</button></div></div>
   <div class="card"><div class="kv">
     <div>Loaded car</div><div>${fmt(r.car)} kg</div>
     <div>Loaded van</div><div>${fmt(r.loadedVan)} kg</div>
@@ -694,11 +712,13 @@ function renderCompare() {
   h += row('Water', ({ r }) => `<td class="v">${fmt0(r.VT.fresh)} L</td>`);
   h += sec('Cost');
   h += row('Total', ({ r }) => `<td class="v">${money(r.cost)}</td>`);
+  h += `<tr><td></td>${R.map((x, i) => `<td>${x ? `<button class="btn sm sec" style="width:100%;padding:8px 4px" data-kwi="${i}">Weights</button>` : ''}</td>`).join('')}</tr>`;
   h += `<tr><td></td>${R.map((x, i) => `<td>${x ? `<button class="btn sm sec" style="width:100%;padding:8px 4px" data-open="${i}">Open</button>` : ''}</td>`).join('')}</tr></table>`;
   $('#cmpGrid').innerHTML = h;
 }
 $('#cmpGrid').addEventListener('change', e => { const i = e.target.dataset.slot; if (i === undefined) return; DB.compare[i][e.target.dataset.k] = e.target.value; save(); renderCompare(); });
-$('#cmpGrid').addEventListener('click', e => { const i = e.target.dataset.open; if (i === undefined) return;
+$('#cmpGrid').addEventListener('click', e => { if (e.target.dataset.kwi !== undefined) { const sl = DB.compare[e.target.dataset.kwi]; showWeights(sl.v, sl.c, 'Option ' + (+e.target.dataset.kwi + 1)); return; }
+  const i = e.target.dataset.open; if (i === undefined) return;
   DB.selection.vehicleId = DB.compare[i].v; DB.selection.caravanId = DB.compare[i].c; save(); showTab('combo'); });
 
 /* ---------------- CARS / VANS forms ---------------- */
@@ -962,6 +982,100 @@ function renderLists() {
       ${x.kg ? `<div class="muted">Extras: ${fmt(x.kg)} kg (green = includes extras)</div>` : ''}${autoTag(c)}${btns(c.id)}</div>`;
   }).join('') || '<p class="muted">No caravans yet.</p>';
 }
+
+/* ---------------- popups: key weights + AI summary ---------------- */
+function openInfo(title, html) { $('#im_title').textContent = title; $('#im_body').innerHTML = html; $('#imodal').classList.remove('hidden'); }
+$('#im_close').addEventListener('click', () => $('#imodal').classList.add('hidden'));
+$('#imodal').addEventListener('click', e => { if (e.target.id === 'imodal') $('#imodal').classList.add('hidden'); });
+$('#result').addEventListener('click', e => { if (e.target.dataset.kw) showWeights(DB.selection.vehicleId, DB.selection.caravanId); });
+
+function weightsHTML(v, c, r) {
+  const L = DB.loads, line = (l, kg, sub) => kg ? `<tr><td>${l}${sub ? ` <span class="sub">${sub}</span>` : ''}</td><td class="n">${kg > 0 ? '+' : ''}${fmt(kg)} kg</td></tr>` : '';
+  const lim = (l, a, b) => b === null || b === undefined ? '' : `<tr class="lim"><td class="sub">vs ${l} ${fmt(b)} kg</td><td class="n ${a > b ? 's-red' : (b - a) / b * 100 < (n(DB.settings.yellowPct) ?? 5) ? 's-yellow' : 's-green'}" style="background:none">${a > b ? 'over ' + fmt(a - b) : fmt(b - a) + ' spare'}</td></tr>`;
+  const ex = list => (list || []).filter(a => a.on && n(a.weight)).map(a => `${a.material ? a.material + ' ' : ''}${a.name} ${fmt(a.weight)}`).join(', ');
+  const ballSub = L.ballMode === 'kg' ? 'measured' : `${n(L.ballPct) ?? 0}% of loaded van`;
+  return `
+  <h3 style="margin-top:0">Car – ${esc(v.name)}</h3>
+  <table class="bd">
+    <tr><td>Kerb weight</td><td class="n">${fmt(v.kerb)} kg</td></tr>
+    ${line('Extras', r.carX.kg, esc(ex(v.addons)))}${line('Tanks (counted full)', Math.round(r.carFluids))}
+    ${line('Occupants', n(L.occupants))}${line('Car cargo', n(L.carCargo))}${line('Tow ball weight', r.ball, ballSub)}
+    <tr class="tot"><td>Loaded car</td><td class="n">${fmt(r.car)} kg</td></tr>
+    ${lim(r.RT.on && n(v.upGvm) !== null ? 'upgraded GVM' : 'GVM', r.car, r.RT.gvm)}
+  </table>
+  <h3>Caravan – ${esc(c.name)}</h3>
+  <table class="bd">
+    <tr><td>Tare <span class="sub">(empty tanks)</span></td><td class="n">${fmt(c.tare)} kg</td></tr>
+    ${line('Extras', r.vanX.kg, esc(ex(c.addons)))}${line('Jerry / fuel', Math.round(r.vanFuel))}
+    ${line('Fresh water', r.water, `${fmt(r.water)} L`)}${line('Grey water', r.grey, `${fmt(r.grey)} L`)}${line('Van gear', n(L.vanGear))}
+    <tr class="tot"><td>Loaded van</td><td class="n">${fmt(r.loadedVan)} kg</td></tr>
+    ${lim('van ATM', r.loadedVan, n(c.atm))}${lim(r.RT.on && n(v.upBtc) !== null ? 'upgraded towing limit' : 'towing limit', r.loadedVan, r.RT.btc)}
+  </table>
+  <h3>Hitch & combination</h3>
+  <table class="bd">
+    <tr class="tot"><td>Tow ball</td><td class="n">${fmt(r.ball)} kg</td></tr>${lim(r.RT.on && n(v.upBall) !== null ? 'upgraded max tow ball' : 'max tow ball', r.ball, r.RT.maxBall)}
+    <tr class="tot"><td>On van axles <span class="sub">(van − ball)</span></td><td class="n">${fmt(r.vanAxle)} kg</td></tr>${lim('van GTM', r.vanAxle, n(c.gtm))}
+    <tr class="tot"><td>Car + van</td><td class="n">${fmt(r.combined)} kg</td></tr>${lim(r.RT.on && n(v.upGcm) !== null ? 'upgraded GCM' : 'GCM', r.combined, r.RT.gcm)}
+  </table>
+  <p class="muted" style="margin:10px 0 0">Change occupants, cargo, water and gear on the Check tab's Load card.</p>`;
+}
+function showWeights(vid, cid, label) {
+  const v = DB.vehicles.find(x => x.id === vid), c = DB.caravans.find(x => x.id === cid);
+  if (!v || !c) return;
+  const r = calc(v, c, DB.loads);
+  openInfo((label ? label + ' – ' : '') + 'Key weights', r.miss.length ? `<p>Missing ${r.miss.map(m => LABEL[m]).join(', ')} – fill these in first.</p>` : weightsHTML(v, c, r));
+}
+
+// AI summary of whatever is on screen
+const slim = r => ({ result: WORD[r.worst], loadedCar: r.car, loadedVan: r.loadedVan, ball: r.ball, combined: r.combined, waterL: r.water, carRoom: r.carRoom, vanRoom: r.vanRoom, totalCost: r.cost,
+  checks: r.checks.filter(x => x.l !== null).map(x => ({ check: x.t, actual: x.a, limit: x.l, spare: x.margin, status: x.s })) });
+const carInfo = v => ({ name: v.name, kerb: v.kerb, gvm: v.gvm, gcm: v.gcm, towing: v.btc, maxBall: v.maxBall, price: v.price, km: v.odometer,
+  upgrade: v.upStatus ? { status: v.upStatus, kit: v.upKit, inUse: !!v.upOn, gvm: v.upGvm, gcm: v.upGcm, towing: v.upBtc, ball: v.upBall, cost: v.upCost, type: v.upType } : null,
+  extras: (v.addons || []).filter(a => a.on).map(a => ({ name: a.name, kg: a.weight, material: a.material || undefined })), lookedUp: v.auto });
+const vanInfo = c => ({ name: c.name, tare: c.tare, atm: c.atm, gtm: c.gtm, tareBall: c.tareBall, lengthFt: c.lengthFt, freshL: c.freshL, greyL: c.greyL, lithiumAh: c.batteryAh, solarW: c.solarW, inverterW: c.inverterW, price: c.price,
+  extras: (c.addons || []).filter(a => a.on).map(a => ({ name: a.name, kg: a.weight, capacity: a.cap, capType: a.capType || undefined })), lookedUp: c.auto });
+function aiContext() {
+  const tab = TABS.find(t => !$('#tab-' + t).classList.contains('hidden'));
+  const load = { occupantsKg: DB.loads.occupants, carCargoKg: DB.loads.carCargo, vanGearKg: DB.loads.vanGear, waterFull: DB.loads.fullWater, ball: DB.loads.ballMode === 'kg' ? DB.loads.ballKg + ' kg measured' : DB.loads.ballPct + '% of loaded van' };
+  if (tab === 'combo') {
+    const v = DB.vehicles.find(x => x.id === DB.selection.vehicleId), c = DB.caravans.find(x => x.id === DB.selection.caravanId);
+    if (!v || !c) return null;
+    const d = { screen: 'One car + caravan combination', load, car: carInfo(v), van: vanInfo(c), now: slim(calc(v, c, DB.loads)) };
+    if (hasUpgrade(v)) { d.withoutUpgrade = slim(calc(v, c, DB.loads, false)); d.withUpgrade = slim(calc(v, c, DB.loads, true)); }
+    return { title: v.name + ' + ' + c.name, data: d };
+  }
+  if (tab === 'compare') {
+    const opts = DB.compare.map((sl, i) => { const v = DB.vehicles.find(x => x.id === sl.v), c = DB.caravans.find(x => x.id === sl.c);
+      return v && c ? { option: i + 1, car: carInfo(v), van: vanInfo(c), result: slim(calc(v, c, DB.loads)) } : null; }).filter(Boolean);
+    return opts.length ? { title: 'Comparison of ' + opts.length + ' options', data: { screen: 'Side-by-side comparison', load, options: opts } } : null;
+  }
+  if (tab === 'vehicles') return DB.vehicles.length ? { title: 'Your cars', data: { screen: 'List of tow vehicles being considered', cars: DB.vehicles.map(carInfo) } } : null;
+  if (tab === 'caravans') return DB.caravans.length ? { title: 'Your caravans', data: { screen: 'List of caravans being considered', vans: DB.caravans.map(vanInfo) } } : null;
+  return null;
+}
+function mdLite(t) {   // tiny, safe markdown: ## headings, - bullets, **bold**
+  const out = []; let list = false;
+  esc(t).split('\n').forEach(line => {
+    const l = line.trim(), b = s => s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    if (/^[-*•] /.test(l)) { if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + b(l.slice(2)) + '</li>'); return; }
+    if (list) { out.push('</ul>'); list = false; }
+    if (/^#{1,4} /.test(l)) out.push('<h3>' + b(l.replace(/^#+ /, '')) + '</h3>');
+    else if (l) out.push('<p>' + b(l) + '</p>');
+  });
+  if (list) out.push('</ul>');
+  return out.join('');
+}
+$('#aiBtn').addEventListener('click', async () => {
+  const ctx = aiContext();
+  if (!ctx) { toast('Open Check, Compare, Cars or Vans with something to summarise'); return; }
+  if (!LOOK.url) { toast('Set up Web lookup on the Setup tab first'); return; }
+  openInfo('AI summary', '<p class="muted">Thinking… (10–30 seconds)</p>');
+  try {
+    const r = await lookup({ kind: 'summary', title: ctx.title, data: ctx.data });
+    openInfo('AI summary – ' + ctx.title, `<div class="ai">${mdLite(r.text || 'No summary returned.')}</div>
+      <p class="muted" style="margin:12px 0 0">AI-written from the figures in this app. Check anything important against the compliance plates.</p>`);
+  } catch (e) { openInfo('AI summary', `<p class="warn">Failed: ${esc(e.message)}</p>`); }
+});
 
 /* ---------------- setup ---------------- */
 $('#lk_url').value = LOOK.url || ''; $('#lk_key').value = LOOK.key || '';
