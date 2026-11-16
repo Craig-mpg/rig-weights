@@ -100,6 +100,8 @@
   .xr2{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;margin-top:8px}
   .xr2 label{font-size:13px;margin-bottom:2px}
   .xr2 input,.xr2 select{font-size:17px;padding:9px 10px}
+  .askmat{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding:10px;border-radius:10px;background:var(--yellow-bg)}
+  .askmat b{color:var(--yellow);width:100%}
   .xnote{font-size:13px;color:var(--muted);margin-top:6px;overflow-wrap:anywhere}
 
   /* lists */
@@ -246,7 +248,7 @@
         <p class="muted" style="margin:8px 0 0">Blank = factory figure. A post-rego GVM-only upgrade keeps the factory GCM.</p>
       </div>
       <h3>Extras fitted</h3>
-      <p class="muted" style="margin:-4px 0 8px">Type a name and the weight is looked up. Water and fuel tanks are counted full.</p>
+      <p class="muted" style="margin:-4px 0 8px">Type a name and the weight is looked up – you can change any figure it suggests. Water and fuel tanks are counted full.</p>
       <div id="vAddons"></div>
       <div class="grid" style="margin-top:12px"><div class="full"><label>Notes</label><textarea name="notes"></textarea></div></div>
       <p class="muted autoNote hidden" style="margin:10px 0 0"><span style="color:var(--yellow)">▌</span> Looked up online – check against the compliance plate.</p>
@@ -290,7 +292,7 @@
         <div><label>Inverter W</label><input name="inverterW" type="number" inputmode="numeric"></div>
       </div>
       <h3>Extras added</h3>
-      <p class="muted" style="margin:-4px 0 8px">Type a name and the weight and capacity are looked up. Extra tanks, batteries and solar add to the van's totals.</p>
+      <p class="muted" style="margin:-4px 0 8px">Type a name and the weight and capacity are looked up – you can change any figure it suggests. Extra tanks, batteries and solar add to the van's totals.</p>
       <div id="cAddons"></div>
       <div class="grid" style="margin-top:12px"><div class="full"><label>Notes</label><textarea name="notes"></textarea></div></div>
       <p class="muted autoNote hidden" style="margin:10px 0 0"><span style="color:var(--yellow)">▌</span> Looked up online – check against the compliance plate.</p>
@@ -368,6 +370,8 @@ const money = v => v ? '$' + Math.round(v).toLocaleString('en-AU') : '–';
 const uid = p => p + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const SHORT = { gvm: 'GVM', gcm: 'GCM', btc: 'Towing', atm: 'Van ATM', ball: 'Tow ball', gtm: 'Van GTM' };
 const CAPS = { '': '–', water: 'Water L', fuel: 'Fuel L', battery: 'Battery Ah', solar: 'Solar W', inverter: 'Inverter W' };
+const MATS = ['Steel', 'Aluminium', 'Stainless', 'Plastic / poly'];
+const MAT_RX = /bull ?bar|nudge|\bbar\b|bar ?work|rack|platform|step|slider|carrier|tray|canopy|drawer|tool ?box|tank|bash ?plate|underbody|ladder|bumper/i;
 const CAPUNIT = { water: 'L', fuel: 'L', battery: 'Ah', solar: 'W', inverter: 'W' };
 const KEYF = { v: ['kerb', 'gvm', 'gcm', 'btc', 'maxBall', 'fuelL', 'frontAxle', 'rearAxle'],
                c: ['lengthFt', 'tare', 'atm', 'gtm', 'tareBall', 'freshL', 'greyL', 'batteryAh', 'solarW', 'inverterW'] };
@@ -434,7 +438,7 @@ function setSave(t) { $('#saveState').textContent = t; }
 /* ---------------- web lookup ---------------- */
 async function lookup(body) {
   if (!LOOK.url) throw new Error('Set up Web lookup on the Setup tab first');
-  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 90000);
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 150000);
   try {
     const r = await fetch(LOOK.url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-App-Key': LOOK.key || '' }, body: JSON.stringify(body), signal: ctl.signal });
     const j = await r.json().catch(() => ({ error: 'Bad reply from lookup service' }));
@@ -543,7 +547,7 @@ function renderCombo() {
   $('#wrapBallKg').classList.toggle('hidden', L.ballMode !== 'kg');
 
   const chips = (list, kind) => list.length ? `<div class="chips">${list.map(a =>
-    `<label class="chip${a.on ? ' on' : ''}"><input type="checkbox" data-${kind}="${esc(a.id)}"${a.on ? ' checked' : ''}>${esc(a.name)}<span class="w">${n(a.weight) === null ? '? kg' : fmt(a.weight) + ' kg'}${capTxt(a)}</span></label>`).join('')}</div>`
+    `<label class="chip${a.on ? ' on' : ''}"><input type="checkbox" data-${kind}="${esc(a.id)}"${a.on ? ' checked' : ''}>${a.material ? esc(a.material) + ' ' : ''}${esc(a.name)}<span class="w">${n(a.weight) === null ? '? kg' : fmt(a.weight) + ' kg'}${capTxt(a)}</span></label>`).join('')}</div>`
     : `<p class="muted" style="margin:0">None yet – add them on the ${kind === 'cx' ? 'Cars' : 'Vans'} tab.</p>`;
   $('#carExtras').innerHTML = !v ? '' :
     (hasUpgrade(v) ? `<label class="toggle" style="margin-bottom:6px"><input type="checkbox" id="upToggle"${v.upOn ? ' checked' : ''}>Mass upgrade on</label>
@@ -714,26 +718,30 @@ function extrasEditor(box, list, side, ctx) {
         <div><label>Capacity</label><input type="number" inputmode="decimal" data-f="cap" value="${a.cap ?? ''}" class="${a.auto.includes('cap') ? 'auto' : ''}"></div>
         <div><label>Of</label><select data-f="capType" class="${a.auto.includes('capType') ? 'auto' : ''}">${Object.entries(CAPS).map(([k, t]) => `<option value="${k}"${a.capType === k ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
         <div><label>Price $</label><input type="number" inputmode="numeric" data-f="price" value="${a.price ?? ''}" class="${a.auto.includes('price') ? 'auto' : ''}"></div>
-      </div>${a.note ? `<div class="xnote">${a.note}</div>` : ''}</div>`).join('') +
+        <div><label>Material</label><select data-f="material"><option value="">–</option>${MATS.map(m => `<option${a.material === m ? ' selected' : ''}>${m}</option>`).join('')}</select></div>
+      </div>${a.askMat ? `<div class="askmat"><b>What is it made of?</b>${MATS.map(m => `<button type="button" class="btn sm sec" data-mat="${m}" data-mi="${i}">${m}</button>`).join('')}</div>` : ''}
+      ${a.note ? `<div class="xnote">${a.note}</div>` : ''}</div>`).join('') +
       `<button type="button" class="btn sm sec" data-add="1">+ Add extra</button>`;
   };
   const doLook = async (i, quiet) => {
     const a = box._items[i]; if (!a || !a.name.trim()) return;
     if (!LOOK.url) { if (!quiet) toast('Set up Web lookup on the Setup tab first'); return; }
+    if (MAT_RX.test(a.name) && !a.material) { a.askMat = true; draw(); return; }
     const btn = box.querySelector(`[data-look="${i}"]`); btn?.classList.add('busy');
     try {
-      const r = await lookup({ kind: 'extra', side, name: a.name.trim(), context: ctx() });
+      const r = await lookup({ kind: 'extra', side, name: a.name.trim(), material: a.material || undefined, context: ctx() });
       const set = (k, v) => { if (v === null || v === undefined || v === '') return; if (a[k] === null || a[k] === undefined || a[k] === '') { a[k] = v; a.auto.push(k); } };
       set('weight', r.weight); set('price', r.price);
       if (r.capType && !a.capType) { a.capType = r.capType; a.auto.push('capType'); }
       if (a.capType === r.capType) set('cap', r.cap);
-      a.note = srcHTML(r);
+      a.note = (r.estimate && r.weight !== null ? '<b style="color:var(--yellow)">≈ Estimate from similar products.</b> ' : '') + srcHTML(r);
       if (r.weight === null && !quiet) toast(`No weight found for "${a.name}" – enter it yourself`);
     } catch (e) { if (!quiet) toast('Lookup failed: ' + e.message); }
     btn?.classList.remove('busy'); draw();
   };
   box.oninput = e => {
     const row = e.target.closest('.xi'); if (!row) return; const a = box._items[row.dataset.i], f = e.target.dataset.f;
+    if (f === 'material') { a.material = e.target.value; a.askMat = false; return; }
     a[f] = f === 'on' ? e.target.checked : ['weight', 'price', 'cap'].includes(f) ? n(e.target.value) : e.target.value;
     a.auto = a.auto.filter(k => k !== f); e.target.classList.remove('auto');
   };
@@ -744,10 +752,11 @@ function extrasEditor(box, list, side, ctx) {
   };
   box.onclick = e => {
     const t = e.target.closest('button'); if (!t) return;
-    if (t.dataset.add) { box._items.push({ id: uid('x'), name: '', weight: null, price: null, cap: null, capType: '', on: true, auto: [] }); draw();
+    if (t.dataset.add) { box._items.push({ id: uid('x'), name: '', weight: null, price: null, cap: null, capType: '', material: '', on: true, auto: [] }); draw();
       const ins = box.querySelectorAll('input[data-f=name]'); ins[ins.length - 1].focus(); }
     if (t.dataset.del !== undefined) { box._items.splice(+t.dataset.del, 1); draw(); }
     if (t.dataset.look !== undefined) doLook(+t.dataset.look, false);
+    if (t.dataset.mat) { const a = box._items[+t.dataset.mi]; a.material = t.dataset.mat; a.askMat = false; draw(); doLook(+t.dataset.mi, false); }
   };
   draw();
 }
@@ -783,7 +792,7 @@ function setupCrud(kind) {
   form.addEventListener('submit', e => {
     e.preventDefault();
     const o = readForm(form, nums);
-    o.addons = box._items.filter(a => a.name.trim()).map(a => Object.assign(a, { name: a.name.trim() }));
+    o.addons = box._items.filter(a => a.name.trim()).map(a => { delete a.askMat; return Object.assign(a, { name: a.name.trim() }); });
     o.lookNote = src.innerHTML;
     const list = DB[listKey];
     if (o.id) { const i = list.findIndex(x => x.id === o.id); list[i] = Object.assign(list[i], o); } else { o.id = uid(kind); list.push(o); }
