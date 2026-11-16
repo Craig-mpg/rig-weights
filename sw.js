@@ -1,5 +1,5 @@
 // Offline cache for the app shell. API calls always go to the network.
-const CACHE = 'rig-weights-v12';
+const CACHE = 'rig-weights-v13';
 const SHELL = ['./', 'index.html', 'manifest.json', 'seed.json', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

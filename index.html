@@ -483,6 +483,8 @@
     <h2>Add from listing</h2>
     <label>Paste the listing link</label>
     <input id="lm_url" type="url" inputmode="url" placeholder="https://www.carsales.com.au/…">
+    <label style="margin-top:12px">Ad text <span style="font-weight:400">(optional – for sites like carsales that block reading)</span></label>
+    <textarea id="lm_text" rows="4" placeholder="Open the ad, select all, copy, and paste it here"></textarea>
     <p class="muted" id="lm_state" style="margin:10px 0 0">Reads the ad, then searches the web for anything it leaves out. Takes 10–30 seconds.</p>
     <div class="actions"><button class="btn" id="lm_go">Look up</button><button class="btn sec" id="lm_cancel">Cancel</button></div>
   </div>
@@ -1049,22 +1051,23 @@ async function autoFill(kind, id) {
 // Add from listing popup
 let listingKind = 'v';
 document.querySelectorAll('[data-listing]').forEach(b => b.addEventListener('click', () => {
-  listingKind = b.dataset.listing; $('#lm_url').value = ''; $('#lm_state').textContent = 'Reads the ad, then searches the web for anything it leaves out. Takes 10–30 seconds.';
+  listingKind = b.dataset.listing; $('#lm_url').value = ''; $('#lm_text').value = ''; $('#lm_state').textContent = 'Reads the ad, then searches the web for anything it leaves out. Takes 10–30 seconds.';
   $('#lmodal').classList.remove('hidden'); setTimeout(() => $('#lm_url').focus(), 50);
 }));
 $('#lm_cancel').addEventListener('click', () => $('#lmodal').classList.add('hidden'));
 $('#lm_go').addEventListener('click', async () => {
-  const url = $('#lm_url').value.trim();
-  if (!/^https?:\/\//.test(url)) { $('#lm_state').textContent = 'Paste a full link starting with https://'; return; }
+  const url = $('#lm_url').value.trim(), text = $('#lm_text').value.trim();
+  if (url && !/^https?:\/\//.test(url)) { $('#lm_state').textContent = 'Paste a full link starting with https://'; return; }
+  if (!url && !text) { $('#lm_state').textContent = 'Paste the ad link, the ad text, or both'; return; }
   const F = FORMS[listingKind], btn = $('#lm_go');
   if (!LOOK.url) { $('#lm_state').textContent = 'Set up Web lookup on the Setup tab first.'; return; }
   btn.disabled = true; btn.textContent = 'Reading…'; $('#lm_state').textContent = 'Reading the listing and searching for missing figures…';
   try {
-    const r = await lookup({ kind: F.kindName, url, known: pickKnown(readForm(F.form, listingKind === 'v' ? numV : numC), listingKind) });
-    if (!F.form.elements.link.value) F.form.elements.link.value = url;
+    const r = await lookup({ kind: F.kindName, url: url || undefined, pageText: text || undefined, known: pickKnown(readForm(F.form, listingKind === 'v' ? numV : numC), listingKind) });
+    if (url && !F.form.elements.link.value) F.form.elements.link.value = url;
     const c = fillForm(F.form, r.fields); F.src.innerHTML = srcHTML(r);
     $('#lmodal').classList.add('hidden');
-    toast(c ? `Filled ${c} field(s) – check the yellow ones, then Save` : 'Nothing found in that listing');
+    toast((c ? `Filled ${c} field(s) – check the yellow ones, then Save` : 'Nothing found') + (r.notes && /blocks/.test(r.notes) ? '. This site blocks reading: paste the ad text for price, km and upgrade.' : ''), 9000);
   } catch (e) { $('#lm_state').textContent = 'Failed: ' + e.message; }
   btn.disabled = false; btn.textContent = 'Look up';
 });
