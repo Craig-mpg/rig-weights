@@ -65,7 +65,8 @@
   .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:800}
   .toggle{display:flex;align-items:center;color:var(--ink);font-size:17px;margin:0;cursor:pointer;font-weight:600}
   .formtop{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .formtop h2{margin:0;flex:1 1 auto}
+  .formtop h2{margin:0;flex:1 1 100%}
+  .formtop .btn{flex:1 1 0}
   .src{font-size:14px;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
 
   /* result */
@@ -211,6 +212,7 @@
 <section id="tab-vehicles" class="hidden">
   <div class="card">
     <div class="formtop"><h2 id="vFormTitle">Add car</h2>
+      <button class="btn sm sec" type="button" data-fill="v">Fill all blanks</button>
       <button class="btn sm" type="button" data-listing="v">Add from listing</button></div>
     <form id="vForm" autocomplete="off">
       <input type="hidden" name="id">
@@ -255,7 +257,7 @@
       <div class="src" id="vSrc"></div>
       <div class="actions">
         <button class="btn" type="submit">Save car</button>
-        <button class="btn sec" type="button" data-fill="v">Fill blanks</button>
+        <button class="btn sec" type="button" data-fill="v">Fill all blanks</button>
         <button class="btn sec" type="button" id="vReset">Clear</button>
       </div>
     </form>
@@ -267,6 +269,7 @@
 <section id="tab-caravans" class="hidden">
   <div class="card">
     <div class="formtop"><h2 id="cFormTitle">Add caravan</h2>
+      <button class="btn sm sec" type="button" data-fill="c">Fill all blanks</button>
       <button class="btn sm" type="button" data-listing="c">Add from listing</button></div>
     <form id="cForm" autocomplete="off">
       <input type="hidden" name="id">
@@ -299,7 +302,7 @@
       <div class="src" id="cSrc"></div>
       <div class="actions">
         <button class="btn" type="submit">Save caravan</button>
-        <button class="btn sec" type="button" data-fill="c">Fill blanks</button>
+        <button class="btn sec" type="button" data-fill="c">Fill all blanks</button>
         <button class="btn sec" type="button" id="cReset">Clear</button>
       </div>
     </form>
@@ -724,9 +727,10 @@ function extrasEditor(box, list, side, ctx) {
       `<button type="button" class="btn sm sec" data-add="1">+ Add extra</button>`;
   };
   const doLook = async (i, quiet) => {
-    const a = box._items[i]; if (!a || !a.name.trim()) return;
-    if (!LOOK.url) { if (!quiet) toast('Set up Web lookup on the Setup tab first'); return; }
-    if (MAT_RX.test(a.name) && !a.material) { a.askMat = true; draw(); return; }
+    const a = box._items[i]; if (!a || !a.name.trim()) return 'skip';
+    if (!LOOK.url) { if (!quiet) toast('Set up Web lookup on the Setup tab first'); return 'skip'; }
+    if (MAT_RX.test(a.name) && !a.material) { a.askMat = true; draw(); return 'ask'; }
+    if (a._busy) return 'skip'; a._busy = true;
     const btn = box.querySelector(`[data-look="${i}"]`); btn?.classList.add('busy');
     try {
       const r = await lookup({ kind: 'extra', side, name: a.name.trim(), material: a.material || undefined, context: ctx() });
@@ -736,8 +740,19 @@ function extrasEditor(box, list, side, ctx) {
       if (a.capType === r.capType) set('cap', r.cap);
       a.note = (r.estimate && r.weight !== null ? '<b style="color:var(--yellow)">≈ Estimate from similar products.</b> ' : '') + srcHTML(r);
       if (r.weight === null && !quiet) toast(`No weight found for "${a.name}" – enter it yourself`);
-    } catch (e) { if (!quiet) toast('Lookup failed: ' + e.message); }
-    btn?.classList.remove('busy'); draw();
+      a._busy = false; btn?.classList.remove('busy'); draw();
+      return n(a.weight) !== null ? 'ok' : 'none';
+    } catch (e) { a._busy = false; if (!quiet) toast('Lookup failed: ' + e.message); btn?.classList.remove('busy'); draw(); return 'fail'; }
+  };
+  // look up every extra that has a name but no weight; returns counts
+  box._lookAll = async () => {
+    const c = { ok: 0, none: 0, ask: 0, fail: 0, skip: 0 };
+    for (let i = 0; i < box._items.length; i++) {
+      const a = box._items[i];
+      if (!a.name.trim() || n(a.weight) !== null) continue;
+      c[await doLook(i, true)]++;
+    }
+    return c;
   };
   box.oninput = e => {
     const row = e.target.closest('.xi'); if (!row) return; const a = box._items[row.dataset.i], f = e.target.dataset.f;
@@ -748,7 +763,7 @@ function extrasEditor(box, list, side, ctx) {
   box.onchange = e => {  // auto look-up when a new name is entered and weight is blank
     if (e.target.dataset.f !== 'name') return;
     const i = +e.target.closest('.xi').dataset.i, a = box._items[i];
-    if (a.name.trim() && n(a.weight) === null) doLook(i, true);
+    if (a.name.trim() && n(a.weight) === null) setTimeout(() => { if (n(a.weight) === null) doLook(i, true); }, 300);  // let a pending tap (e.g. + Add extra) finish first
   };
   box.onclick = e => {
     const t = e.target.closest('button'); if (!t) return;
@@ -774,25 +789,37 @@ function setupCrud(kind) {
   $(isV ? '#vReset' : '#cReset').addEventListener('click', reset);
   form.addEventListener('input', e => { if (e.target.name) { e.target.classList.remove('auto'); markAutoNote(form); } });
 
-  // Fill blanks button (form)
-  form.querySelector('[data-fill]').addEventListener('click', async e => {
-    const btn = e.target, o = readForm(form, nums);
+  // Fill all blanks: the car/van's own figures, then every extra with no weight
+  document.querySelectorAll(`[data-fill="${kind}"]`).forEach(fb => fb.addEventListener('click', async () => {
+    const btns = document.querySelectorAll(`[data-fill="${kind}"]`), o = readForm(form, nums);
+    if (!LOOK.url) { toast('Set up Web lookup on the Setup tab first'); return; }
     if (!o.name && !o.link) { toast('Enter a name or listing link first'); return; }
+    btns.forEach(b => { b.disabled = true; b.textContent = 'Looking up…'; });
+    const msg = [];
     const want = [...KEYF[kind], ...(o.link ? ['price', ...(isV ? ['odometer', 'upGvm', 'upGcm', 'upBtc', 'upBall', 'upType', 'upDetails'] : [])] : [])].filter(k => o[k] === null || o[k] === '');
-    if (!want.length) { toast('Nothing blank to fill'); return; }
-    btn.disabled = true; btn.textContent = 'Looking up…';
-    try {
-      const r = await lookup({ kind: FORMS[kind].kindName, name: o.name, url: o.link || undefined, known: pickKnown(o, kind), want });
-      const c = fillForm(form, r.fields); src.innerHTML = srcHTML(r);
-      toast(c ? `Filled ${c} value(s) – yellow edge, please check` : 'No more figures found');
-    } catch (err) { toast('Lookup failed: ' + err.message); }
-    btn.disabled = false; btn.textContent = 'Fill blanks';
-  });
+    if (want.length) {
+      toast(`Looking up ${want.length} blank figure(s)…`, 60000);
+      try {
+        const r = await lookup({ kind: FORMS[kind].kindName, name: o.name, url: o.link || undefined, known: pickKnown(o, kind), want });
+        const c = fillForm(form, r.fields); src.innerHTML = srcHTML(r);
+        msg.push(c ? `${c} ${noun} figure(s) filled` : `no more ${noun} figures found`);
+      } catch (err) { msg.push(`${noun} lookup failed: ${err.message}`); }
+    }
+    const todo = box._items.filter(a => a.name.trim() && n(a.weight) === null).length;
+    if (todo) {
+      toast(`Looking up ${todo} extra(s)…`, 120000);
+      const c = await box._lookAll();
+      msg.push(`${c.ok} of ${todo} extra weight(s) found`);
+      if (c.ask) msg.push(`${c.ask} need the material picked – then tap 🔍`);
+    }
+    btns.forEach(b => { b.disabled = false; b.textContent = 'Fill all blanks'; });
+    toast(msg.length ? msg.join(' · ') + '. Check the yellow ones, then Save.' : 'Nothing blank to fill', 9000);
+  }));
 
   form.addEventListener('submit', e => {
     e.preventDefault();
     const o = readForm(form, nums);
-    o.addons = box._items.filter(a => a.name.trim()).map(a => { delete a.askMat; return Object.assign(a, { name: a.name.trim() }); });
+    o.addons = box._items.filter(a => a.name.trim()).map(a => { delete a.askMat; delete a._busy; return Object.assign(a, { name: a.name.trim() }); });
     o.lookNote = src.innerHTML;
     const list = DB[listKey];
     if (o.id) { const i = list.findIndex(x => x.id === o.id); list[i] = Object.assign(list[i], o); } else { o.id = uid(kind); list.push(o); }
