@@ -871,7 +871,7 @@ function fillForm(form, fields) {
     el.value = v; el.classList.add('auto'); c++;
   }
   if (form.elements.upStatus && ['upGvm', 'upGcm', 'upBtc'].some(k => fields?.[k]) && !form.elements.upStatus.value) { form.elements.upStatus.value = 'fitted'; form.elements.upStatus.classList.add('auto'); showUp(form); }
-  markAutoNote(form);
+  markAutoNote(form); if (form.elements.upStatus) showUp(form);
   return c;
 }
 const pickKnown = (o, kind) => Object.fromEntries(['name', ...KEYF[kind], 'price'].filter(k => o[k] !== null && o[k] !== undefined && o[k] !== '').map(k => [k, o[k]]));
@@ -914,6 +914,7 @@ function extrasEditor(box, list, side, ctx) {
       return n(a.weight) !== null ? 'ok' : 'none';
     } catch (e) { a._busy = false; if (!quiet) toast('Lookup failed: ' + e.message); btn?.classList.remove('busy'); draw(); return 'fail'; }
   };
+  box._draw = draw;
   // look up every extra that has a name but no weight; returns counts
   box._lookAll = async () => {
     const c = { ok: 0, none: 0, ask: 0, fail: 0, skip: 0 };
@@ -1067,6 +1068,15 @@ $('#lm_go').addEventListener('click', async () => {
     if (url && !F.form.elements.link.value) F.form.elements.link.value = url;
     const c = fillForm(F.form, r.fields); F.src.innerHTML = srcHTML(r);
     $('#lmodal').classList.add('hidden');
+    // accessories named in the ad -> extras, then look up their weights
+    const box = $(listingKind === 'v' ? '#vAddons' : '#cAddons'), have = new Set(box._items.map(a => a.name.trim().toLowerCase()));
+    const added = (r.extras || []).filter(x => !have.has(x.toLowerCase())).map(x => ({ id: uid('x'), name: x, weight: null, price: null, cap: null, capType: '', on: true, auto: [],
+      material: /alloy|alumin/i.test(x) ? 'Aluminium' : /stainless/i.test(x) ? 'Stainless' : /steel/i.test(x) ? 'Steel' : /poly|plastic/i.test(x) ? 'Plastic / poly' : '' }));
+    if (added.length) {
+      box._items.push(...added); box._draw();
+      setTimeout(async () => { toast(`Looking up weights for ${added.length} extra(s) from the ad…`, 120000);
+        const k = await box._lookAll(); toast(`${k.ok} of ${added.length} extra weight(s) found` + (k.ask ? ` · ${k.ask} need the material picked` : '') + '. Check the yellow ones, then Save.', 9000); }, 9500);
+    }
     toast((c ? `Filled ${c} field(s) – check the yellow ones, then Save` : 'Nothing found') + (r.notes && /blocks/.test(r.notes) ? '. This site blocks reading: paste the ad text for price, km and upgrade.' : ''), 9000);
   } catch (e) { $('#lm_state').textContent = 'Failed: ' + e.message; }
   btn.disabled = false; btn.textContent = 'Look up';
