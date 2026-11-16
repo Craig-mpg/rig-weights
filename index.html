@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rig Weights</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f4e78">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rig Weights">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#fff; --ink:#1d2733; --muted:#64748b; --line:#dde3ea; --brand:#1f4e78;
+    --green:#1e8e3e; --green-bg:#e6f4ea; --yellow:#b06d00; --yellow-bg:#fff4d6; --red:#c5221f; --red-bg:#fce8e6;
+    --grey-bg:#eef1f4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+  header{background:var(--brand);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0;font-weight:600}
+  nav{display:flex;gap:4px;flex-wrap:wrap}
+  nav button{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:14px}
+  nav button.active{background:#fff;color:var(--brand);border-color:#fff;font-weight:600}
+  #saveState{margin-left:auto;font-size:12px;opacity:.85}
+  main{max-width:1250px;margin:0 auto;padding:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+  .card h2{font-size:16px;margin:0 0 12px}
+  .card h3{font-size:14px;margin:0 0 8px}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .col{flex:1 1 300px;min-width:260px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+  input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+  input[type=checkbox]{width:auto;margin:0 6px 0 0;vertical-align:middle}
+  textarea{min-height:56px;resize:vertical}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px 12px}
+  .grid .wide{grid-column:span 2}
+  .grid .full{grid-column:1/-1}
+  .btn{background:var(--brand);color:#fff;border:0;padding:8px 14px;border-radius:6px;cursor:pointer;font:inherit;font-size:14px}
+  .btn.sec{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+  .btn.danger{background:#fff;color:var(--red);border:1px solid var(--red)}
+  .btn.sm{padding:4px 9px;font-size:12px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;color:var(--muted);font-weight:600;background:#fafbfc}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  td input{padding:5px 7px}
+  .scroll{overflow-x:auto}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+  .s-green{background:var(--green-bg);color:var(--green)}
+  .s-yellow{background:var(--yellow-bg);color:var(--yellow)}
+  .s-red{background:var(--red-bg);color:var(--red)}
+  .s-na{background:var(--grey-bg);color:var(--muted)}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+  .check{border-radius:10px;padding:12px 14px;border:1px solid var(--line);border-left-width:6px}
+  .check.s-green{border-left-color:var(--green)} .check.s-yellow{border-left-color:#e0a100} .check.s-red{border-left-color:var(--red)} .check.s-na{border-left-color:#b8c2cc}
+  .check .t{font-weight:600;font-size:14px;color:var(--ink)}
+  .check .big{font-size:20px;font-weight:700;margin:4px 0}
+  .check .sub{font-size:12px;color:var(--ink);opacity:.8}
+  .bar{height:8px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden;margin-top:8px}
+  .bar>div{height:100%}
+  .s-green .bar>div{background:var(--green)} .s-yellow .bar>div{background:#e0a100} .s-red .bar>div{background:var(--red)}
+  .overall{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;margin-bottom:14px;font-weight:600;flex-wrap:wrap}
+  .overall .big{font-size:22px}
+  .kv{display:grid;grid-template-columns:auto auto;gap:4px 14px;font-size:14px}
+  .kv div:nth-child(odd){color:var(--muted)}
+  .kv div:nth-child(even){text-align:right;font-weight:600}
+  .muted{color:var(--muted);font-size:12px}
+  .warn{color:var(--yellow);font-size:12px;font-weight:600}
+  .matrix td.cell{cursor:pointer;text-align:center;font-size:12px;font-weight:600;white-space:nowrap}
+  .matrix td.cell:hover{outline:2px solid var(--brand)}
+  .hidden{display:none}
+  a{color:var(--brand)}
+  .legend span{margin-right:10px}
+  .ticks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 14px}
+  .ticks label{color:var(--ink);font-size:14px;margin:0;display:flex;align-items:center;cursor:pointer}
+  .ticks label .w{margin-left:auto;color:var(--muted);font-size:12px;padding-left:8px;white-space:nowrap}
+  .ticks label .w.unset{color:var(--yellow);font-weight:600}
+  .total{font-weight:600;margin-top:8px;font-size:14px}
+  /* compare table: fixed layout, never wider than the screen */
+  .ctab{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 3px;font-size:clamp(11px,1.6vw,14px);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px}
+  .ctab th,.ctab td{border:0;padding:5px 6px;border-radius:6px;overflow:hidden;text-overflow:ellipsis}
+  .ctab col.lbl{width:24%}
+  @media (max-width:480px){ .ctab col.lbl{width:27%} }
+  .ctab th.lbl,.ctab td.lbl{color:var(--muted);font-weight:500;background:transparent;white-space:nowrap}
+  .ctab td.v{text-align:right;font-weight:600;white-space:nowrap}
+  .ctab select{font-size:inherit;padding:4px;margin-bottom:3px;text-overflow:ellipsis}
+  .ctab .opt{font-weight:700;color:var(--ink);background:transparent;padding-bottom:2px}
+  .ctab td.best{box-shadow:inset 0 0 0 2px var(--brand)}
+  .ctab tr.sec td{padding-top:10px;font-size:.85em;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:transparent}
+  .ctab .status{text-align:center;font-weight:700}
+  .ctab .nms{font-weight:400;font-size:.82em;color:var(--muted);white-space:normal;line-height:1.25;overflow-wrap:anywhere}
+  .ctab th{vertical-align:top}
+  /* list tables become cards on narrow screens */
+  @media (max-width:900px){
+    table.rt, table.rt tbody, table.rt tr, table.rt td{display:block;width:100%}
+    table.rt tr:first-child{display:none}
+    table.rt tr{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;padding:6px 8px}
+    table.rt td{border:0;padding:3px 0;text-align:right}
+    table.rt td[data-l]::before{content:attr(data-l);float:left;color:var(--muted);font-size:12px}
+    table.rt td.nm{text-align:left}
+    .matrix-wide{display:none}
+  }
+  @media (min-width:901px){ .matrix-narrow{display:none} }
+  table.inl{table-layout:fixed} table.inl input{min-width:0} table.inl .f-weight,table.inl .f-price{width:90px} table.inl td:last-child,table.inl th:last-child{width:70px}
+  table.inl th:nth-last-child(2):not(.f-notes){width:50px}
+  @media (max-width:600px){ table.inl .f-notes{display:none} table.inl .f-price{width:72px} table.inl .f-weight{width:68px} table.inl td,table.inl th{padding:4px 3px} }
+  .mrow{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 8px;border-radius:6px;margin:3px 0;cursor:pointer;font-size:13px}
+
+  @media (max-width:600px){ main{padding:10px} .grid .wide{grid-column:span 1} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Rig Weights</h1>
+  <nav id="tabs">
+    <button data-tab="combo" class="active">Combination</button>
+    <button data-tab="compare">Compare</button>
+    <button data-tab="vehicles">Vehicles</button>
+    <button data-tab="caravans">Caravans</button>
+    <button data-tab="addons">Add-ons</button>
+    <button data-tab="people">People</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+  <span id="saveState">Loading…</span>
+</header>
+
+<main>
+<!-- ================= COMBINATION ================= -->
+<section id="tab-combo">
+  <div class="card">
+    <div class="row">
+      <div class="col"><label>Tow vehicle</label><select id="selVehicle"></select></div>
+      <div class="col"><label>Caravan</label><select id="selCaravan"></select></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card col">
+      <h2>Who's travelling</h2>
+      <div class="ticks" id="comboPeople"></div>
+      <div class="grid" style="margin-top:10px">
+        <div><label>Other occupants / pets (kg)</label><input type="number" id="ld_occupants"></div>
+      </div>
+      <div class="total" id="peopleTotal"></div>
+    </div>
+    <div class="card col">
+      <h2>Load the rig</h2>
+      <div class="grid">
+        <div><label>Car cargo (kg) – food, tools, clothes in car</label><input type="number" id="ld_carCargo"></div>
+        <div><label>Van gear (kg) – food, clothes, gas, kit</label><input type="number" id="ld_vanGear"></div>
+        <div><label><input type="checkbox" id="ld_fullWater"> Fresh water tanks full</label>
+          <input type="number" id="ld_waterL" placeholder="Litres carried"></div>
+        <div><label>Grey water carried (L)</label><input type="number" id="ld_greyL"></div>
+        <div><label>Ball weight method</label>
+          <select id="ld_ballMode"><option value="pct">% of loaded van</option><option value="kg">Measured (kg)</option></select></div>
+        <div id="wrapBallPct"><label>Ball weight % of loaded van</label><input type="number" step="0.5" id="ld_ballPct"></div>
+        <div id="wrapBallKg" class="hidden"><label>Measured ball weight (kg)</label><input type="number" id="ld_ballKg"></div>
+      </div>
+      <p class="muted" style="margin:10px 0 0">Kerb weight includes a full tank of fuel. Water = 1 kg per litre.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card col">
+      <h2>Car mass upgrade</h2>
+      <div id="comboUpgrade"></div>
+      <h2 style="margin-top:14px">Car add-ons <span class="muted" id="comboCarName"></span></h2>
+      <div class="ticks" id="comboCarAddons"></div>
+      <div class="total" id="carAddonTotal"></div>
+      <p class="muted">Ticks are saved to the selected vehicle. Manage the list on the Add-ons tab.</p>
+    </div>
+    <div class="card col">
+      <h2>Van add-ons <span class="muted" id="comboVanName"></span></h2>
+      <div class="ticks" id="comboVanAddons"></div>
+      <div class="total" id="vanAddonTotal"></div>
+      <p class="muted">Only tick items NOT already included in the van's tare weight.</p>
+    </div>
+  </div>
+
+  <div id="result"></div>
+
+  <div class="card">
+    <h2>All combinations</h2>
+    <p class="muted" style="margin-top:-6px">Same people and loads applied to every vehicle × caravan (each with its own add-ons). Cell shows overall status and the check closest to its limit. Click a cell to open it.</p>
+    <div class="scroll" id="matrix"></div>
+  </div>
+</section>
+
+<!-- ================= COMPARE ================= -->
+<section id="tab-compare" class="hidden">
+  <div class="card" style="padding:12px 16px">
+    <h2 style="margin-bottom:4px">Compare up to 3 combinations</h2>
+    <p class="muted" style="margin:0">Uses the same people, water, gear and ball settings as the Combination tab, and each car/van's own add-ons. Blue outline = most headroom overall.</p>
+  </div>
+  <div id="cmpGrid"></div>
+</section>
+
+<!-- ================= VEHICLES ================= -->
+<section id="tab-vehicles" class="hidden">
+  <div class="card">
+    <h2 id="vFormTitle">Add vehicle</h2>
+    <form id="vForm" autocomplete="off">
+      <input type="hidden" name="id">
+      <div class="grid">
+        <div class="wide"><label>Name *</label><input name="name" required></div>
+        <div><label>Make</label><input name="make"></div>
+        <div><label>Model</label><input name="model"></div>
+        <div><label>Variant</label><input name="variant"></div>
+        <div><label>Year</label><input name="year" type="number"></div>
+        <div><label>Kerb weight (kg) *</label><input name="kerb" type="number" required></div>
+        <div><label>Other fitted extras (kg, not in add-ons)</label><input name="accessories" type="number"></div>
+        <div><label>Factory GVM (kg) *</label><input name="gvm" type="number" required></div>
+        <div><label>Factory GCM (kg)</label><input name="gcm" type="number"></div>
+        <div><label>Factory braked towing (kg)</label><input name="btc" type="number"></div>
+        <div><label>Factory max tow ball (kg)</label><input name="maxBall" type="number"></div>
+        <div><label>Front axle rating (kg)</label><input name="frontAxle" type="number"></div>
+        <div><label>Rear axle rating (kg)</label><input name="rearAxle" type="number"></div>
+        <div><label>Fuel capacity (L)</label><input name="fuelL" type="number"></div>
+        <div><label>Price ($)</label><input name="price" type="number"></div>
+        <div><label>Odometer (km)</label><input name="odometer" type="number"></div>
+        <div class="wide"><label>Other mods / notes on plates</label><input name="upgrade"></div>
+        <div class="full"><label>Listing link</label><input name="link" type="url"></div>
+        <div class="full"><label>Notes</label><textarea name="notes"></textarea></div>
+        <div class="full" style="border:1px solid var(--line);border-radius:8px;padding:10px">
+          <label style="color:var(--ink);font-size:14px;font-weight:600"><input type="checkbox" name="upOn"> Mass upgrade (GVM / GCM / towing) – use these figures</label>
+          <div class="grid" style="margin-top:8px">
+            <div><label>Type</label><select name="upType"><option value="">–</option><option value="pre">Pre-rego (federal SSM)</option><option value="post">Post-rego (state engineered)</option></select></div>
+            <div><label>State certified (post-rego)</label><input name="upState" placeholder="e.g. QLD"></div>
+            <div><label>Upgraded GVM (kg)</label><input name="upGvm" type="number"></div>
+            <div><label>Upgraded GCM (kg)</label><input name="upGcm" type="number"></div>
+            <div><label>Upgraded towing (BTC) (kg)</label><input name="upBtc" type="number"></div>
+            <div><label>Upgraded max tow ball (kg)</label><input name="upBall" type="number"></div>
+            <div><label>Upgraded front axle (kg)</label><input name="upFront" type="number"></div>
+            <div><label>Upgraded rear axle (kg)</label><input name="upRear" type="number"></div>
+            <div><label>Upgrade cost ($)</label><input name="upCost" type="number"></div>
+            <div class="wide"><label>Kit / installer / plate details</label><input name="upDetails" placeholder="e.g. Lovells 4000 kit, Qld mod plate LS11/LS16"></div>
+          </div>
+          <p class="muted" style="margin:6px 0 0">Blank upgraded fields keep the factory figure. A post-rego GVM-only upgrade normally leaves GCM at factory. Untick to see the vehicle stock.</p>
+        </div>
+        <div class="full"><label>Fitted add-ons</label><div class="ticks" id="vFormAddons"></div></div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit">Save vehicle</button>
+        <button class="btn sec" type="button" id="vReset">Clear / new</button>
+      </div>
+    </form>
+  </div>
+  <div class="card"><h2>Vehicles</h2><div class="scroll" id="vList"></div></div>
+</section>
+
+<!-- ================= CARAVANS ================= -->
+<section id="tab-caravans" class="hidden">
+  <div class="card">
+    <h2 id="cFormTitle">Add caravan</h2>
+    <form id="cForm" autocomplete="off">
+      <input type="hidden" name="id">
+      <div class="grid">
+        <div class="wide"><label>Name *</label><input name="name" required></div>
+        <div><label>Make</label><input name="make"></div>
+        <div><label>Model</label><input name="model"></div>
+        <div><label>Year</label><input name="year" type="number"></div>
+        <div><label>Length (ft)</label><input name="lengthFt" type="number" step="0.1"></div>
+        <div><label>Tare (kg) *</label><input name="tare" type="number" required></div>
+        <div><label>ATM (kg) *</label><input name="atm" type="number" required></div>
+        <div><label>GTM (kg)</label><input name="gtm" type="number"></div>
+        <div><label>Tare ball weight (kg)</label><input name="tareBall" type="number"></div>
+        <div><label>Fresh water (L)</label><input name="freshL" type="number"></div>
+        <div><label>Grey water (L)</label><input name="greyL" type="number"></div>
+        <div><label>Lithium (Ah, 12V equiv)</label><input name="batteryAh" type="number"></div>
+        <div><label>Solar (W)</label><input name="solarW" type="number"></div>
+        <div><label>Inverter (W)</label><input name="inverterW" type="number"></div>
+        <div><label>Price ($)</label><input name="price" type="number"></div>
+        <div class="full"><label>Listing link</label><input name="link" type="url"></div>
+        <div class="full"><label>Notes</label><textarea name="notes"></textarea></div>
+        <div class="full"><label>Fitted add-ons (not included in tare)</label><div class="ticks" id="cFormAddons"></div></div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit">Save caravan</button>
+        <button class="btn sec" type="button" id="cReset">Clear / new</button>
+      </div>
+    </form>
+  </div>
+  <div class="card"><h2>Caravans</h2><div class="scroll" id="cList"></div></div>
+</section>
+
+<!-- ================= ADD-ONS ================= -->
+<section id="tab-addons" class="hidden">
+  <div class="card">
+    <h2>Add an add-on / upgrade</h2>
+    <form id="aForm" autocomplete="off">
+      <div class="grid">
+        <div><label>For</label><select name="appliesTo"><option value="car">Car</option><option value="van">Caravan</option></select></div>
+        <div class="wide"><label>Name *</label><input name="name" required placeholder="e.g. Dual battery, Coffee machine"></div>
+        <div><label>Weight (kg)</label><input name="weight" type="number" step="0.1"></div>
+        <div><label>Price ($)</label><input name="price" type="number"></div>
+        <div class="wide"><label>Notes</label><input name="notes" placeholder="Brand / where weight came from"></div>
+      </div>
+      <div class="actions"><button class="btn" type="submit">Add</button></div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="card col"><h2>Car add-ons</h2><div class="scroll" id="aListCar"></div></div>
+    <div class="card col"><h2>Caravan add-ons</h2><div class="scroll" id="aListVan"></div></div>
+  </div>
+  <p class="muted">Edit weights and prices directly in the tables. Items with no weight are shown in amber and count as 0 kg until set.</p>
+</section>
+
+<!-- ================= PEOPLE ================= -->
+<section id="tab-people" class="hidden">
+  <div class="card">
+    <h2>Add person</h2>
+    <form id="pForm" autocomplete="off">
+      <div class="grid">
+        <div class="wide"><label>Name *</label><input name="name" required></div>
+        <div><label>Weight (kg)</label><input name="weight" type="number" step="0.1"></div>
+        <div class="wide"><label>Notes</label><input name="notes"></div>
+      </div>
+      <div class="actions"><button class="btn" type="submit">Add</button></div>
+    </form>
+  </div>
+  <div class="card"><h2>People</h2><div class="scroll" id="pList"></div>
+    <p class="muted">Tick who's travelling on the Combination tab.</p></div>
+</section>
+
+<!-- ================= SETTINGS ================= -->
+<section id="tab-settings" class="hidden">
+  <div class="card">
+    <h2>Colour thresholds</h2>
+    <div class="grid">
+      <div><label>Yellow when headroom is below (% of limit)</label><input type="number" step="0.5" id="set_yellowPct"></div>
+    </div>
+    <p class="legend muted" style="margin-top:10px">
+      <span class="pill s-green">Green</span> headroom ≥ threshold
+      <span class="pill s-yellow">Yellow</span> within limit but headroom &lt; threshold
+      <span class="pill s-red">Red</span> over the limit
+      <span class="pill s-na">n/a</span> limit not entered
+    </p>
+  </div>
+  <div class="card">
+    <h2>Backup &amp; restore</h2>
+    <p class="muted" id="storageNote">Data saves automatically. On the NUC it saves to the server (with rolling backups). As a phone app it saves on the phone only – use Export regularly as a backup, and Import to move data between devices.</p>
+    <div class="actions">
+      <button class="btn sec" id="btnExport">Export JSON</button>
+      <label class="btn sec" style="display:inline-block;margin:0;color:var(--brand)">Import JSON<input type="file" id="fileImport" accept=".json,application/json" class="hidden"></label>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+'use strict';
+/* ---------------- state & persistence ---------------- */
+let DB = null;
+let serverMode = true;
+const LS_KEY = 'rigWeightsData';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n = v => (v === null || v === undefined || v === '' || isNaN(+v)) ? null : +v;
+const fmt = v => v === null || v === undefined || !isFinite(v) ? '–' : Math.round(v).toLocaleString('en-AU');
+const money = v => v ? '$' + Math.round(v).toLocaleString('en-AU') : '–';
+const uid = p => p + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+function defaults(d) {
+  d.settings = Object.assign({ yellowPct: 5 }, d.settings || {});
+  d.loads = Object.assign({ occupants: 0, travellers: [], carCargo: 150, fullWater: true, waterL: 0, greyL: 0, vanGear: 300, ballMode: 'pct', ballPct: 10, ballKg: 300 }, d.loads || {});
+  if (!Array.isArray(d.loads.travellers)) d.loads.travellers = [];
+  d.selection = d.selection || {};
+  d.vehicles = d.vehicles || []; d.caravans = d.caravans || [];
+  d.people = d.people || []; d.addons = d.addons || [];
+  if (!Array.isArray(d.compare)) d.compare = [{}, {}, {}];
+  while (d.compare.length < 3) d.compare.push({});
+  d.vehicles.forEach(v => { if (!Array.isArray(v.addons)) v.addons = []; });
+  d.caravans.forEach(c => { if (!Array.isArray(c.addons)) c.addons = []; });
+  return d;
+}
+
+async function load() {
+  try {
+    const r = await fetch('api/data', { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    DB = defaults(await r.json());
+    setSave('Saved on server');
+  } catch (e) {
+    serverMode = false;
+    let local = localStorage.getItem(LS_KEY);
+    if (!local) { try { local = await (await fetch('seed.json')).text(); } catch { local = '{"vehicles":[],"caravans":[]}'; } }
+    DB = defaults(JSON.parse(local));
+    localStorage.setItem(LS_KEY, JSON.stringify(DB));
+    setSave('Saved on this device');
+  }
+  renderAll();
+}
+
+let saveTimer = null;
+function save() {
+  clearTimeout(saveTimer);
+  setSave('Saving…');
+  saveTimer = setTimeout(async () => {
+    if (!serverMode) { localStorage.setItem(LS_KEY, JSON.stringify(DB)); setSave('Saved on this device'); return; }
+    try {
+      const r = await fetch('api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(DB) });
+      if (!r.ok) throw new Error((await r.json()).error || r.status);
+      setSave('Saved ' + new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }));
+    } catch (e) { setSave('⚠ Save failed: ' + e.message); }
+  }, 400);
+}
+function setSave(t) { $('#saveState').textContent = t; }
+
+/* ---------------- tabs ---------------- */
+const TABS = ['combo', 'compare', 'vehicles', 'caravans', 'addons', 'people', 'settings'];
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) showTab(b.dataset.tab); });
+function showTab(t) {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('active', x.dataset.tab === t));
+  TABS.forEach(id => $('#tab-' + id).classList.toggle('hidden', id !== t));
+  if (t === 'combo') renderCombo();
+  if (t === 'compare') renderCompare();
+  window.scrollTo(0, 0);
+}
+
+/* ---------------- helpers for people & add-ons ---------------- */
+const addonsFor = kind => DB.addons.filter(a => a.appliesTo === kind);
+const addonById = id => DB.addons.find(a => a.id === id);
+function addonSum(ids) {
+  let kg = 0, cost = 0, unset = 0;
+  (ids || []).forEach(id => { const a = addonById(id); if (!a) return; if (n(a.weight) === null) unset++; kg += n(a.weight) || 0; cost += n(a.price) || 0; });
+  return { kg, cost, unset };
+}
+function peopleSum() {
+  let kg = 0, unset = 0;
+  DB.loads.travellers.forEach(id => { const p = DB.people.find(x => x.id === id); if (!p) return; if (n(p.weight) === null) unset++; kg += n(p.weight) || 0; });
+  return { kg: kg + (n(DB.loads.occupants) || 0), unset, count: DB.loads.travellers.filter(id => DB.people.some(p => p.id === id)).length };
+}
+function tickList(items, selected, dataAttr) {
+  if (!items.length) return '<span class="muted">None yet – add some on the Add-ons / People tab.</span>';
+  return items.map(i => `<label><input type="checkbox" ${dataAttr}="${esc(i.id)}"${selected.includes(i.id) ? ' checked' : ''}>${esc(i.name)}
+    <span class="w${n(i.weight) === null ? ' unset' : ''}">${n(i.weight) === null ? 'no weight' : fmt(i.weight) + ' kg'}</span></label>`).join('');
+}
+
+/* ---------------- calculation ---------------- */
+// Effective ratings: factory figures, overridden by the mass upgrade when it is switched on.
+function ratings(v, forceUp) {
+  const on = forceUp === undefined ? !!v.upOn : forceUp;
+  const pick = (up, base) => on && n(v[up]) !== null ? n(v[up]) : n(v[base]);
+  return { on, gvm: pick('upGvm', 'gvm'), gcm: pick('upGcm', 'gcm'), btc: pick('upBtc', 'btc'), maxBall: pick('upBall', 'maxBall'),
+    front: pick('upFront', 'frontAxle'), rear: pick('upRear', 'rearAxle'), cost: on ? (n(v.upCost) || 0) : 0 };
+}
+const hasUpgrade = v => ['upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear'].some(k => n(v[k]) !== null);
+function upSummary(v) {
+  if (!hasUpgrade(v)) return '';
+  const f = (lbl, a, b) => n(v[b]) !== null && n(v[b]) !== n(v[a]) ? `${lbl} ${fmt(v[a])}→${fmt(v[b])}` : '';
+  return [f('GVM', 'gvm', 'upGvm'), f('GCM', 'gcm', 'upGcm'), f('Towing', 'btc', 'upBtc'), f('Ball', 'maxBall', 'upBall')].filter(Boolean).join(' · ')
+    + (v.upType ? ` (${v.upType === 'pre' ? 'pre-rego' : 'post-rego' + (v.upState ? ' ' + v.upState : '')})` : '');
+}
+function status(actual, limit) {
+  if (limit === null || limit === undefined || actual === null) return { s: 'na', margin: null, pct: null };
+  const margin = limit - actual;
+  const pct = margin / limit * 100;
+  const y = n(DB.settings.yellowPct) ?? 5;
+  return { s: margin < 0 ? 'red' : pct < y ? 'yellow' : 'green', margin, pct };
+}
+const RANK = { red: 3, yellow: 2, green: 1, na: 0 };
+
+function calc(v, c, L, forceUp) {
+  const RT = ratings(v, forceUp);
+  const people = peopleSum();
+  const carAdd = addonSum(v.addons), vanAdd = addonSum(c.addons);
+  const water = L.fullWater ? (n(c.freshL) || 0) : Math.min(n(L.waterL) || 0, n(c.freshL) ?? Infinity);
+  const grey = Math.min(n(L.greyL) || 0, n(c.greyL) ?? Infinity);
+  const loadedVan = (n(c.tare) || 0) + vanAdd.kg + water + grey + (n(L.vanGear) || 0);
+  const ball = L.ballMode === 'kg' ? (n(L.ballKg) || 0) : Math.round(loadedVan * (n(L.ballPct) || 0) / 100);
+  const vanAxle = loadedVan - ball;
+  const car = (n(v.kerb) || 0) + (n(v.accessories) || 0) + carAdd.kg + people.kg + (n(L.carCargo) || 0) + ball;
+  const combined = car + vanAxle;
+
+  const checks = [
+    { key: 'gvm', t: 'Car vs GVM', a: car, l: RT.gvm, why: 'Loaded car incl. ball weight must not exceed GVM.' },
+    { key: 'gcm', t: 'Car + van vs GCM', a: combined, l: RT.gcm, why: 'Total of loaded car and loaded van.' },
+    { key: 'btc', t: 'Loaded van vs car towing capacity', a: loadedVan, l: RT.btc, why: 'Van’s actual loaded mass vs braked towing capacity.' },
+    { key: 'atm', t: 'Loaded van vs van ATM', a: loadedVan, l: n(c.atm), why: 'Van’s own maximum loaded mass.' },
+    { key: 'ball', t: 'Ball weight vs tow ball limit', a: ball, l: RT.maxBall, why: 'Download on the tow ball / towbar.' },
+    { key: 'gtm', t: 'Van axle load vs GTM', a: vanAxle, l: n(c.gtm), why: 'Load on the van’s own axles when hitched.' },
+  ].map(x => Object.assign(x, status(x.a, x.l)));
+
+  const worst = checks.reduce((w, x) => RANK[x.s] > RANK[w] ? x.s : w, 'na');
+  const tight = checks.filter(x => x.margin !== null).sort((a, b) => (RANK[b.s] - RANK[a.s]) || (a.pct - b.pct))[0] || null;
+  const carRoom = Math.min(RT.gvm !== null ? RT.gvm - car : Infinity, RT.gcm !== null ? RT.gcm - combined : Infinity);
+  const vanRoom = Math.min(n(c.atm) !== null ? n(c.atm) - loadedVan : Infinity, RT.btc !== null ? RT.btc - loadedVan : Infinity);
+
+  return { RT, people, carAdd, vanAdd, water, grey, loadedVan, ball, vanAxle, car, combined, checks, worst, tight,
+    carRoom: isFinite(carRoom) ? carRoom : null, vanRoom: isFinite(vanRoom) ? vanRoom : null,
+    ballPctActual: loadedVan ? ball / loadedVan * 100 : null };
+}
+
+/* ---------------- combination tab ---------------- */
+const loadFields = ['occupants', 'carCargo', 'vanGear', 'waterL', 'greyL', 'ballPct', 'ballKg'];
+
+function fillSelect(sel, items, current) {
+  sel.innerHTML = items.length ? items.map(i => `<option value="${esc(i.id)}"${i.id === current ? ' selected' : ''}>${esc(i.name)}</option>`).join('')
+    : '<option value="">– add one first –</option>';
+}
+
+function renderCombo() {
+  const { vehicles, caravans, selection: S, loads: L } = DB;
+  if (!vehicles.find(v => v.id === S.vehicleId)) S.vehicleId = vehicles[0]?.id;
+  if (!caravans.find(c => c.id === S.caravanId)) S.caravanId = caravans[0]?.id;
+  fillSelect($('#selVehicle'), vehicles, S.vehicleId);
+  fillSelect($('#selCaravan'), caravans, S.caravanId);
+  const v = vehicles.find(x => x.id === S.vehicleId), c = caravans.find(x => x.id === S.caravanId);
+
+  loadFields.forEach(f => { const el = $('#ld_' + f); if (document.activeElement !== el) el.value = L[f] ?? ''; });
+  $('#ld_fullWater').checked = !!L.fullWater;
+  $('#ld_waterL').disabled = !!L.fullWater;
+  $('#ld_ballMode').value = L.ballMode;
+  $('#wrapBallPct').classList.toggle('hidden', L.ballMode !== 'pct');
+  $('#wrapBallKg').classList.toggle('hidden', L.ballMode !== 'kg');
+
+  // people
+  $('#comboPeople').innerHTML = tickList(DB.people, L.travellers, 'data-person');
+  const ps = peopleSum();
+  $('#peopleTotal').innerHTML = `Occupants: ${fmt(ps.kg)} kg` + (ps.unset ? ` <span class="warn">(${ps.unset} without weight)</span>` : '');
+
+  // add-ons
+  $('#comboCarName').textContent = v ? '– ' + v.name : '';
+  $('#comboUpgrade').innerHTML = !v ? '' : hasUpgrade(v)
+    ? `<label style="color:var(--ink);font-size:14px"><input type="checkbox" id="upToggle"${v.upOn ? ' checked' : ''}> Use upgraded figures</label>
+       <div class="muted" style="margin-top:4px">${esc(upSummary(v))}${v.upDetails ? ' – ' + esc(v.upDetails) : ''}</div>`
+    : '<span class="muted">No upgrade entered for this vehicle. Add one on the Vehicles tab (Edit → Mass upgrade).</span>';
+  $('#comboVanName').textContent = c ? '– ' + c.name : '';
+  $('#comboCarAddons').innerHTML = v ? tickList(addonsFor('car'), v.addons, 'data-caraddon') : '';
+  $('#comboVanAddons').innerHTML = c ? tickList(addonsFor('van'), c.addons, 'data-vanaddon') : '';
+  const ca = v ? addonSum(v.addons) : { kg: 0, cost: 0, unset: 0 }, va = c ? addonSum(c.addons) : { kg: 0, cost: 0, unset: 0 };
+  $('#carAddonTotal').innerHTML = `Car add-ons: ${fmt(ca.kg)} kg · ${money(ca.cost)}` + (ca.unset ? ` <span class="warn">(${ca.unset} without weight)</span>` : '');
+  $('#vanAddonTotal').innerHTML = `Van add-ons: ${fmt(va.kg)} kg · ${money(va.cost)}` + (va.unset ? ` <span class="warn">(${va.unset} without weight)</span>` : '');
+
+  $('#result').innerHTML = (v && c) ? resultHTML(v, c, calc(v, c, L)) : '<div class="card muted">Add at least one vehicle and one caravan.</div>';
+  renderMatrix();
+}
+
+const label = { green: 'GREEN – plenty of headroom', yellow: 'YELLOW – within limits but close', red: 'RED – over a limit', na: 'Not enough data' };
+
+function resultHTML(v, c, r) {
+  const over = r.checks.filter(x => x.s === 'red');
+  const cards = r.checks.map(x => {
+    const pctUsed = x.l ? Math.min(100, x.a / x.l * 100) : 0;
+    const big = x.s === 'na' ? 'n/a' : x.margin < 0 ? `Over by ${fmt(-x.margin)} kg` : `${fmt(x.margin)} kg spare`;
+    const sub = x.s === 'na' ? `Actual ${fmt(x.a)} kg – limit not entered` :
+      `${fmt(x.a)} of ${fmt(x.l)} kg (${x.margin < 0 ? Math.abs(x.pct).toFixed(1) + '% over' : x.pct.toFixed(1) + '% headroom'})`;
+    return `<div class="check s-${x.s}"><div class="t">${esc(x.t)}</div><div class="big">${big}</div>
+      <div class="sub">${sub}</div>${x.s !== 'na' ? `<div class="bar"><div style="width:${pctUsed}%"></div></div>` : ''}
+      <div class="muted" style="margin-top:6px">${esc(x.why)}</div></div>`;
+  }).join('');
+  const unset = r.people.unset + r.carAdd.unset + r.vanAdd.unset;
+  const price = (n(v.price) || 0) + (n(c.price) || 0) + r.carAdd.cost + r.vanAdd.cost + r.RT.cost;
+  let upPanel = '';
+  if (hasUpgrade(v)) {
+    const st = calc(v, c, DB.loads, false), up = calc(v, c, DB.loads, true);
+    const line = (lbl, x) => `<tr><td>${lbl}</td><td><span class="pill s-${x.worst}">${x.worst.toUpperCase()}</span></td>` +
+      x.checks.map(k => `<td class="num s-${k.s}">${k.margin === null ? 'n/a' : (k.margin < 0 ? '−' : '+') + fmt(Math.abs(k.margin))}</td>`).join('') + '</tr>';
+    upPanel = `<div class="card"><h2>Stock vs upgraded – this combination</h2><div class="scroll"><table style="table-layout:fixed;font-size:13px">
+      <tr><th style="width:18%"></th><th style="width:16%">Overall</th>${st.checks.map(k => `<th class="num">${SHORT[k.key]}</th>`).join('')}</tr>
+      ${line('Stock', st)}${line('Upgraded', up)}</table></div>
+      <p class="muted" style="margin:6px 0 0">Headroom in kg (+ spare / − over). Currently using: <b>${r.RT.on ? 'upgraded' : 'stock'}</b> figures.</p></div>`;
+  }
+
+  return `
+  <div class="overall s-${r.worst}"><span class="big">${label[r.worst]}</span>
+    <span>${over.length ? over.map(x => `${esc(x.t)}: over by ${fmt(-x.margin)} kg`).join(' · ') :
+      r.tight ? `Closest to its limit: ${esc(r.tight.t)} – ${fmt(r.tight.margin)} kg spare` : ''}</span>
+    ${unset ? `<span class="warn">⚠ ${unset} selected item(s) have no weight – counted as 0 kg</span>` : ''}</div>
+  <div class="card"><h2>${esc(v.name)} &nbsp;+&nbsp; ${esc(c.name)} ${r.RT.on ? '<span class="pill s-green">upgraded ratings</span>' : hasUpgrade(v) ? '<span class="pill s-na">stock ratings</span>' : ''}</h2><div class="checks">${cards}</div></div>
+  ${upPanel}
+  <div class="row">
+    <div class="card col"><h2>Masses</h2><div class="kv">
+      <div>Car kerb</div><div>${fmt(v.kerb)} kg</div>
+      <div>+ Car add-ons</div><div>${fmt(r.carAdd.kg)} kg</div>
+      <div>+ Other fitted extras</div><div>${fmt(n(v.accessories) || 0)} kg</div>
+      <div>+ Occupants</div><div>${fmt(r.people.kg)} kg</div>
+      <div>+ Car cargo</div><div>${fmt(n(DB.loads.carCargo) || 0)} kg</div>
+      <div>+ Ball weight</div><div>${fmt(r.ball)} kg (${r.ballPctActual ? r.ballPctActual.toFixed(1) : '–'}%)</div>
+      <div><b>Loaded car</b></div><div>${fmt(r.car)} kg</div>
+      <div>Van tare</div><div>${fmt(c.tare)} kg</div>
+      <div>+ Van add-ons</div><div>${fmt(r.vanAdd.kg)} kg</div>
+      <div>+ Water (fresh + grey)</div><div>${fmt(r.water + r.grey)} kg</div>
+      <div>+ Van gear</div><div>${fmt(n(DB.loads.vanGear) || 0)} kg</div>
+      <div><b>Loaded van</b></div><div>${fmt(r.loadedVan)} kg</div>
+      <div>Van axle load (hitched)</div><div>${fmt(r.vanAxle)} kg</div>
+      <div><b>Combined</b></div><div>${fmt(r.combined)} kg</div>
+    </div></div>
+    <div class="card col"><h2>What's left</h2><div class="kv">
+      <div>More you can put in the car</div><div class="${r.carRoom < 0 ? 's-red' : ''}">${fmt(r.carRoom)} kg</div>
+      <div>More you can put in the van</div><div class="${r.vanRoom < 0 ? 's-red' : ''}">${fmt(r.vanRoom)} kg</div>
+      <div>Car payload (GVM − kerb)</div><div>${fmt(r.RT.gvm - n(v.kerb))} kg</div>
+      <div>Van payload (ATM − tare)</div><div>${fmt(n(c.atm) - n(c.tare))} kg</div>
+      ${r.RT.front || r.RT.rear ? `<div>Axle ratings F / R</div><div>${fmt(r.RT.front)} / ${fmt(r.RT.rear)} kg</div>` : ''}
+    </div>
+    <p class="muted">"More you can put in the car" is limited by both GVM and GCM. "More in the van" is limited by both van ATM and the car's towing capacity. Axle loads need a weighbridge to check.</p>
+    <h3 style="margin-top:14px">Cost</h3><div class="kv">
+      <div>Car</div><div>${money(v.price)}</div>
+      <div>Caravan</div><div>${money(c.price)}</div>
+      <div>Mass upgrade</div><div>${money(r.RT.cost)}</div>
+      <div>Car add-ons</div><div>${money(r.carAdd.cost)}</div>
+      <div>Van add-ons</div><div>${money(r.vanAdd.cost)}</div>
+      <div><b>Total</b></div><div>${money(price)}</div>
+    </div></div>
+  </div>`;
+}
+
+function renderMatrix() {
+  const { vehicles, caravans, loads: L } = DB;
+  if (!vehicles.length || !caravans.length) { $('#matrix').innerHTML = ''; return; }
+  const cellTxt = t => !t ? 'n/a' : t.margin < 0 ? `Over ${fmt(-t.margin)} kg` : `${fmt(t.margin)} kg`;
+  let h = '<table class="matrix matrix-wide"><tr><th>Vehicle \\ Caravan</th>' + caravans.map(c => `<th>${esc(c.name)}</th>`).join('') + '</tr>';
+  let m = '<div class="matrix-narrow">';
+  vehicles.forEach(v => {
+    h += `<tr><th>${esc(v.name)}</th>`;
+    m += `<h3 style="margin:12px 0 4px">${esc(v.name)}</h3>`;
+    caravans.forEach(c => {
+      const r = calc(v, c, L), t = r.tight;
+      h += `<td class="cell s-${r.worst}" data-v="${esc(v.id)}" data-c="${esc(c.id)}" title="${esc(t ? t.t : '')}">${cellTxt(t)}<div style="font-weight:400">${t ? esc(SHORT[t.key]) : ''}</div></td>`;
+      m += `<div class="mrow cell s-${r.worst}" data-v="${esc(v.id)}" data-c="${esc(c.id)}"><span>${esc(c.name)}</span><b style="white-space:nowrap">${cellTxt(t)}${t ? ' · ' + esc(SHORT[t.key]) : ''}</b></div>`;
+    });
+    h += '</tr>';
+  });
+  $('#matrix').innerHTML = h + '</table>' + m + '</div>';
+}
+$('#matrix').addEventListener('click', e => {
+  const td = e.target.closest('.cell'); if (!td) return;
+  DB.selection.vehicleId = td.dataset.v; DB.selection.caravanId = td.dataset.c; save(); renderCombo(); window.scrollTo(0, 0);
+});
+$('#selVehicle').addEventListener('change', e => { DB.selection.vehicleId = e.target.value; save(); renderCombo(); });
+$('#selCaravan').addEventListener('change', e => { DB.selection.caravanId = e.target.value; save(); renderCombo(); });
+loadFields.forEach(f => $('#ld_' + f).addEventListener('input', e => { DB.loads[f] = n(e.target.value); save(); renderCombo(); }));
+$('#ld_fullWater').addEventListener('change', e => { DB.loads.fullWater = e.target.checked; save(); renderCombo(); });
+$('#ld_ballMode').addEventListener('change', e => { DB.loads.ballMode = e.target.value; save(); renderCombo(); });
+
+function toggleIn(arr, id, on) { const i = arr.indexOf(id); if (on && i < 0) arr.push(id); if (!on && i >= 0) arr.splice(i, 1); }
+$('#comboPeople').addEventListener('change', e => { const id = e.target.dataset.person; if (!id) return; toggleIn(DB.loads.travellers, id, e.target.checked); save(); renderCombo(); });
+$('#comboUpgrade').addEventListener('change', e => {
+  if (e.target.id !== 'upToggle') return; const v = DB.vehicles.find(x => x.id === DB.selection.vehicleId);
+  if (!v) return; v.upOn = e.target.checked; save(); renderCombo(); renderLists();
+});
+$('#comboCarAddons').addEventListener('change', e => {
+  const id = e.target.dataset.caraddon; const v = DB.vehicles.find(x => x.id === DB.selection.vehicleId);
+  if (!id || !v) return; toggleIn(v.addons, id, e.target.checked); save(); renderCombo(); renderLists();
+});
+$('#comboVanAddons').addEventListener('change', e => {
+  const id = e.target.dataset.vanaddon; const c = DB.caravans.find(x => x.id === DB.selection.caravanId);
+  if (!id || !c) return; toggleIn(c.addons, id, e.target.checked); save(); renderCombo(); renderLists();
+});
+
+/* ---------------- CRUD (vehicles & caravans) ---------------- */
+const numV = ['year', 'kerb', 'accessories', 'gvm', 'gcm', 'btc', 'maxBall', 'frontAxle', 'rearAxle', 'fuelL', 'price', 'odometer', 'upGvm', 'upGcm', 'upBtc', 'upBall', 'upFront', 'upRear', 'upCost'];
+const numC = ['year', 'lengthFt', 'tare', 'atm', 'gtm', 'tareBall', 'freshL', 'greyL', 'batteryAh', 'solarW', 'inverterW', 'price'];
+
+function readForm(form, nums) {
+  const o = {};
+  [...form.elements].forEach(el => { if (el.name) o[el.name] = el.type === 'checkbox' ? el.checked : nums.includes(el.name) ? n(el.value) : String(el.value).trim(); });
+  return o;
+}
+function writeForm(form, obj) { [...form.elements].forEach(el => { if (!el.name) return; if (el.type === 'checkbox') el.checked = !!obj[el.name]; else el.value = obj[el.name] ?? ''; }); }
+
+function setupCrud(kind) {
+  const isV = kind === 'v';
+  const form = $(isV ? '#vForm' : '#cForm');
+  const listKey = isV ? 'vehicles' : 'caravans';
+  const nums = isV ? numV : numC;
+  const title = $(isV ? '#vFormTitle' : '#cFormTitle');
+  const noun = isV ? 'vehicle' : 'caravan';
+  const addonBox = $(isV ? '#vFormAddons' : '#cFormAddons');
+  const addonKind = isV ? 'car' : 'van';
+  const renderAddonBox = sel => { addonBox.innerHTML = tickList(addonsFor(addonKind), sel || [], 'data-formaddon'); };
+
+  const reset = () => { form.reset(); form.elements.id.value = ''; title.textContent = 'Add ' + noun; renderAddonBox([]); };
+  form._reset = reset; form._renderAddons = renderAddonBox;
+  $(isV ? '#vReset' : '#cReset').addEventListener('click', reset);
+  const edit = item => { writeForm(form, item); renderAddonBox(item.addons); title.textContent = 'Edit ' + noun + ': ' + item.name; window.scrollTo(0, 0); };
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const o = readForm(form, nums);
+    o.addons = [...addonBox.querySelectorAll('input[data-formaddon]:checked')].map(x => x.dataset.formaddon);
+    const list = DB[listKey];
+    if (o.id) { const i = list.findIndex(x => x.id === o.id); list[i] = Object.assign(list[i], o); }
+    else { o.id = uid(kind); list.push(o); }
+    save(); reset(); renderLists();
+  });
+
+  $(isV ? '#vList' : '#cList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]'); if (!b) return;
+    const list = DB[listKey]; const item = list.find(x => x.id === b.dataset.id); if (!item) return;
+    if (b.dataset.act === 'edit') edit(item);
+    if (b.dataset.act === 'copy') { const cp = JSON.parse(JSON.stringify(item)); cp.id = uid(kind); cp.name = item.name + ' (copy)'; list.push(cp); save(); renderLists(); edit(cp); }
+    if (b.dataset.act === 'del' && confirm(`Delete "${item.name}"?`)) { DB[listKey] = list.filter(x => x !== item); save(); renderLists(); }
+    if (b.dataset.act === 'use') { DB.selection[isV ? 'vehicleId' : 'caravanId'] = item.id; save(); showTab('combo'); }
+  });
+}
+
+const rowBtns = id => `<button class="btn sm" data-act="use" data-id="${esc(id)}">Use</button>
+  <button class="btn sm sec" data-act="edit" data-id="${esc(id)}">Edit</button>
+  <button class="btn sm sec" data-act="copy" data-id="${esc(id)}">Copy</button>
+  <button class="btn sm danger" data-act="del" data-id="${esc(id)}">Delete</button>`;
+const addonNames = ids => (ids || []).map(id => addonById(id)?.name).filter(Boolean).join(', ');
+const nameCell = o => `<b>${esc(o.name)}</b>${o.link ? ` <a href="${esc(o.link)}" target="_blank" rel="noopener">listing</a>` : ''}
+  ${o.kerb !== undefined && hasUpgrade(o) ? `<div class="muted">Upgrade${o.upOn ? ' (ON)' : ' (off)'}: ${esc(upSummary(o))}</div>` : ''}${o.upgrade ? `<div class="muted">${esc(o.upgrade)}</div>` : ''}${o.addons?.length ? `<div class="muted">Add-ons: ${esc(addonNames(o.addons))}</div>` : ''}${o.notes ? `<div class="muted">${esc(o.notes)}</div>` : ''}`;
+
+function renderLists() {
+  $('#vList').innerHTML = DB.vehicles.length ? `<table class="rt"><tr><th>Vehicle</th><th class="num">Kerb</th><th class="num">Add-ons kg</th><th class="num">GVM</th><th class="num">Payload left</th><th class="num">GCM</th><th class="num">BTC</th><th class="num">Ball</th><th class="num">Price</th><th class="num">Km</th><th></th></tr>` +
+    DB.vehicles.map(v => { const a = addonSum(v.addons).kg + (n(v.accessories) || 0);
+      const R = ratings(v), up = (val, base) => R.on && val !== n(v[base]) ? `<b style="color:var(--green)">${fmt(val)}↑</b>` : fmt(val);
+      return `<tr><td class="nm">${nameCell(v)}</td><td class="num" data-l="Kerb">${fmt(v.kerb)}</td><td class="num" data-l="Add-ons kg">${fmt(a)}</td><td class="num" data-l="GVM">${up(R.gvm, 'gvm')}</td>
+      <td class="num" data-l="Payload left">${fmt(R.gvm - n(v.kerb) - a)}</td><td class="num" data-l="GCM">${up(R.gcm, 'gcm')}</td><td class="num" data-l="Towing capacity">${up(R.btc, 'btc')}</td><td class="num" data-l="Max ball">${up(R.maxBall, 'maxBall')}</td>
+      <td class="num" data-l="Price">${money(v.price)}</td><td class="num" data-l="Km">${fmt(v.odometer)}</td><td class="nm" style="white-space:nowrap">${rowBtns(v.id)}</td></tr>`; }).join('') + '</table>'
+    : '<p class="muted">No vehicles yet.</p>';
+
+  $('#cList').innerHTML = DB.caravans.length ? `<table class="rt"><tr><th>Caravan</th><th class="num">Ft</th><th class="num">Tare</th><th class="num">Add-ons kg</th><th class="num">ATM</th><th class="num">Payload left</th><th class="num">GTM</th><th class="num">Ball</th><th class="num">Water L</th><th class="num">Ah</th><th class="num">Solar W</th><th class="num">Inverter W</th><th class="num">Price</th><th></th></tr>` +
+    DB.caravans.map(c => { const a = addonSum(c.addons).kg;
+      return `<tr><td class="nm">${nameCell(c)}</td><td class="num" data-l="Length ft">${c.lengthFt ?? '–'}</td><td class="num" data-l="Tare">${fmt(c.tare)}</td><td class="num" data-l="Add-ons kg">${fmt(a)}</td><td class="num" data-l="ATM">${fmt(c.atm)}</td>
+      <td class="num" data-l="Payload left">${fmt(n(c.atm) - n(c.tare) - a)}</td><td class="num" data-l="GTM">${fmt(c.gtm)}</td><td class="num" data-l="Tare ball">${fmt(c.tareBall)}</td><td class="num" data-l="Fresh water L">${fmt(c.freshL)}</td>
+      <td class="num" data-l="Lithium Ah">${fmt(c.batteryAh)}</td><td class="num" data-l="Solar W">${fmt(c.solarW)}</td><td class="num" data-l="Inverter W">${fmt(c.inverterW)}</td><td class="num" data-l="Price">${money(c.price)}</td>
+      <td class="nm" style="white-space:nowrap">${rowBtns(c.id)}</td></tr>`; }).join('') + '</table>'
+    : '<p class="muted">No caravans yet.</p>';
+
+  renderAddonTables(); renderPeople();
+  // refresh form tick boxes (keep current ticks)
+  ['#vForm', '#cForm'].forEach(sel => { const f = $(sel); const box = f.querySelector('.ticks');
+    const cur = [...box.querySelectorAll('input:checked')].map(x => x.dataset.formaddon); f._renderAddons && f._renderAddons(cur); });
+}
+
+/* ---------------- add-ons & people tables (inline editable) ---------------- */
+function usageCount(id) { return DB.vehicles.filter(v => v.addons.includes(id)).length + DB.caravans.filter(c => c.addons.includes(id)).length; }
+function inlineTable(items, kind) {
+  if (!items.length) return '<p class="muted">None yet.</p>';
+  const cols = kind === 'person' ? ['name', 'weight', 'notes'] : ['name', 'weight', 'price', 'notes'];
+  const head = { name: 'Name', weight: 'Weight kg', price: 'Price $', notes: 'Notes' };
+  return `<table class="inl"><tr>${cols.map(c => `<th class="f-${c}${c === 'weight' || c === 'price' ? ' num' : ''}">${head[c]}</th>`).join('')}${kind !== 'person' ? '<th class="num">Used</th>' : ''}<th></th></tr>` +
+    items.map(i => `<tr>${cols.map(c => `<td class="f-${c}${c === 'weight' || c === 'price' ? ' num' : ''}"><input data-${kind}="${esc(i.id)}" data-field="${c}" ${c === 'weight' || c === 'price' ? 'type="number" step="0.1"' : ''} value="${esc(i[c] ?? '')}"${c === 'weight' && n(i.weight) === null ? ' style="border-color:#e0a100"' : ''}></td>`).join('')}
+      ${kind !== 'person' ? `<td class="num">${usageCount(i.id)}</td>` : ''}<td><button class="btn sm danger" data-del${kind}="${esc(i.id)}">Delete</button></td></tr>`).join('') + '</table>';
+}
+function renderAddonTables() {
+  $('#aListCar').innerHTML = inlineTable(addonsFor('car'), 'addon');
+  $('#aListVan').innerHTML = inlineTable(addonsFor('van'), 'addon');
+}
+function renderPeople() { $('#pList').innerHTML = inlineTable(DB.people, 'person'); }
+
+function inlineEdit(e, kind, list) {
+  const id = e.target.dataset[kind]; if (!id) return;
+  const item = list().find(x => x.id === id); if (!item) return;
+  const f = e.target.dataset.field;
+  item[f] = (f === 'weight' || f === 'price') ? n(e.target.value) : e.target.value;
+  save();
+}
+['#aListCar', '#aListVan'].forEach(sel => {
+  $(sel).addEventListener('change', e => { inlineEdit(e, 'addon', () => DB.addons); renderLists(); });
+  $(sel).addEventListener('click', e => {
+    const id = e.target.dataset.deladdon; if (!id) return;
+    const a = addonById(id); const used = usageCount(id);
+    if (!confirm(`Delete "${a.name}"?` + (used ? ` It is fitted to ${used} vehicle(s)/caravan(s) and will be removed from them.` : ''))) return;
+    DB.addons = DB.addons.filter(x => x.id !== id);
+    DB.vehicles.forEach(v => toggleIn(v.addons, id, false)); DB.caravans.forEach(c => toggleIn(c.addons, id, false));
+    save(); renderLists();
+  });
+});
+$('#pList').addEventListener('change', e => { inlineEdit(e, 'person', () => DB.people); });
+$('#pList').addEventListener('click', e => {
+  const id = e.target.dataset.delperson; if (!id) return;
+  const p = DB.people.find(x => x.id === id); if (!confirm(`Delete "${p.name}"?`)) return;
+  DB.people = DB.people.filter(x => x.id !== id); toggleIn(DB.loads.travellers, id, false); save(); renderPeople();
+});
+$('#aForm').addEventListener('submit', e => {
+  e.preventDefault(); const f = e.target;
+  DB.addons.push({ id: uid('a'), appliesTo: f.appliesTo.value, name: f.name.value.trim(), weight: n(f.weight.value), price: n(f.price.value), notes: f.notes.value.trim() });
+  const keep = f.appliesTo.value; f.reset(); f.appliesTo.value = keep; save(); renderLists();
+});
+$('#pForm').addEventListener('submit', e => {
+  e.preventDefault(); const f = e.target; const id = uid('p');
+  DB.people.push({ id, name: f.name.value.trim(), weight: n(f.weight.value), notes: f.notes.value.trim() });
+  DB.loads.travellers.push(id); f.reset(); save(); renderPeople();
+});
+
+/* ---------------- compare tab ---------------- */
+const SHORT = { gvm: 'GVM', gcm: 'GCM', btc: 'Tow capacity', atm: 'Van ATM', ball: 'Tow ball', gtm: 'Van GTM' };
+function renderCompare() {
+  const slots = DB.compare.slice(0, 3);
+  const R = slots.map(sl => {
+    const v = DB.vehicles.find(x => x.id === sl.v), c = DB.caravans.find(x => x.id === sl.c);
+    return (v && c) ? { v, c, r: calc(v, c, DB.loads) } : null;
+  });
+  let best = -1, bestScore = -Infinity;
+  R.forEach((x, i) => {
+    if (!x || x.r.worst === 'red') return;
+    const sc = Math.min(...x.r.checks.filter(k => k.pct !== null).map(k => k.pct));
+    if (sc > bestScore) { bestScore = sc; best = i; }
+  });
+  const opt = (items, cur, ph) => `<option value="">${ph}</option>` + items.map(i => `<option value="${esc(i.id)}"${i.id === cur ? ' selected' : ''}>${esc(i.name)}</option>`).join('');
+  const cells = f => R.map((x, i) => x ? f(x, i) : `<td class="v s-na">–</td>`).join('');
+  const sign = m => m === null ? 'n/a' : (m < 0 ? '−' : '+') + fmt(Math.abs(m));
+  const row = (lbl, f) => `<tr><td class="lbl">${lbl}</td>${cells(f)}</tr>`;
+  const sec = t => `<tr class="sec"><td colspan="4">${t}</td></tr>`;
+
+  let h = `<table class="ctab"><colgroup><col class="lbl"><col><col><col></colgroup>
+    <tr><th class="lbl"></th>${slots.map((sl, i) => `<th class="opt${i === best ? ' best' : ''}">Option ${i + 1}${i === best ? ' ★' : ''}
+      <select data-slot="${i}" data-k="v">${opt(DB.vehicles, sl.v, 'Car…')}</select>
+      <select data-slot="${i}" data-k="c">${opt(DB.caravans, sl.c, 'Caravan…')}</select>
+      <div class="nms">${R[i] ? esc(R[i].v.name) + '<br>+ ' + esc(R[i].c.name) : ''}</div></th>`).join('')}</tr>`;
+  h += `<tr><td class="lbl">Overall</td>${cells(({ r }) => `<td class="status s-${r.worst}">${{ green: 'GREEN', yellow: 'YELLOW', red: 'RED', na: 'N/A' }[r.worst]}</td>`)}</tr>`;
+  h += sec('Headroom (kg) — + spare / − over');
+  for (const k of ['gvm', 'gcm', 'btc', 'atm', 'ball', 'gtm']) {
+    h += row(SHORT[k], ({ r }) => { const c = r.checks.find(z => z.key === k); return `<td class="v s-${c.s}" title="${esc(c.t)}">${sign(c.margin)}</td>`; });
+  }
+  h += row('Ratings', ({ r }) => `<td class="v" style="font-weight:400;font-size:.85em;white-space:normal">GVM ${fmt(r.RT.gvm)}<br>GCM ${fmt(r.RT.gcm)}${r.RT.on ? ' ↑' : ''}</td>`);
+  h += sec('Weights (kg)');
+  h += row('Loaded car', ({ r }) => `<td class="v">${fmt(r.car)}</td>`);
+  h += row('Loaded van', ({ r }) => `<td class="v">${fmt(r.loadedVan)}</td>`);
+  h += row('Ball weight', ({ r }) => `<td class="v">${fmt(r.ball)}</td>`);
+  h += row('Combined', ({ r }) => `<td class="v">${fmt(r.combined)}</td>`);
+  h += row('Room in car', ({ r }) => `<td class="v ${r.carRoom < 0 ? 's-red' : ''}">${fmt(r.carRoom)}</td>`);
+  h += row('Room in van', ({ r }) => `<td class="v ${r.vanRoom < 0 ? 's-red' : ''}">${fmt(r.vanRoom)}</td>`);
+  h += sec('Van');
+  h += row('Length', ({ c }) => `<td class="v">${c.lengthFt ?? '–'} ft</td>`);
+  h += row('Lithium', ({ c }) => `<td class="v">${fmt(c.batteryAh)} Ah</td>`);
+  h += row('Solar', ({ c }) => `<td class="v">${fmt(c.solarW)} W</td>`);
+  h += row('Water', ({ c }) => `<td class="v">${fmt(c.freshL)} L</td>`);
+  h += sec('Cost');
+  h += row('Total', ({ v, c, r }) => `<td class="v">${money((n(v.price) || 0) + (n(c.price) || 0) + r.carAdd.cost + r.vanAdd.cost + r.RT.cost)}</td>`);
+  h += `<tr><td class="lbl"></td>${R.map((x, i) => `<td>${x ? `<button class="btn sm sec" style="width:100%" data-open="${i}">Details</button>` : ''}</td>`).join('')}</tr></table>`;
+  const unset = R.some(x => x && (x.r.people.unset + x.r.carAdd.unset + x.r.vanAdd.unset));
+  $('#cmpGrid').innerHTML = h + (unset ? '<p class="warn">⚠ Some selected people/add-ons have no weight (counted as 0 kg).</p>' : '');
+}
+$('#cmpGrid').addEventListener('change', e => {
+  const i = e.target.dataset.slot; if (i === undefined) return;
+  DB.compare[i][e.target.dataset.k] = e.target.value; save(); renderCompare();
+});
+$('#cmpGrid').addEventListener('click', e => {
+  const i = e.target.dataset.open; if (i === undefined) return;
+  DB.selection.vehicleId = DB.compare[i].v; DB.selection.caravanId = DB.compare[i].c; save(); showTab('combo');
+});
+
+/* ---------------- settings ---------------- */
+$('#set_yellowPct').addEventListener('input', e => { DB.settings.yellowPct = n(e.target.value); save(); });
+$('#btnExport').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' }));
+  a.download = 'rig-weights-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+});
+$('#fileImport').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!Array.isArray(d.vehicles) || !Array.isArray(d.caravans)) throw new Error('File must contain vehicles and caravans arrays');
+    if (!confirm('Replace all current data with this file?')) return;
+    DB = defaults(d); save(); renderAll();
+  } catch (err) { alert('Import failed: ' + err.message); }
+  e.target.value = '';
+});
+
+function renderAll() {
+  $('#set_yellowPct').value = DB.settings.yellowPct ?? 5;
+  $('#vForm')._reset(); $('#cForm')._reset();
+  renderLists(); renderCombo();
+}
+
+setupCrud('v'); setupCrud('c');
+load();
+if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
